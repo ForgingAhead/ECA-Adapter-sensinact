@@ -1,0 +1,11 @@
+resource co2_density=[localgateway/co2sensor/alert/state]
+resource OPEN=[localgateway/window/switch/open]
+resource CLOSED=[localgateway/window/switch/close]
+
+on co2_density.subscribe()   
+
+if co2_density.get() == true do
+    OPEN.act()         
+else do 
+    CLOSED.act()
+end if

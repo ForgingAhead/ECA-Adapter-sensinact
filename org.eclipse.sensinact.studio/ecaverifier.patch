@@ -1,0 +1,123 @@
+diff --git a/ui/org.eclipse.sensinact.studio.perspective/META-INF/MANIFEST.MF b/ui/org.eclipse.sensinact.studio.perspective/META-INF/MANIFEST.MF
+index cd37428..bf8d337 100644
+--- a/ui/org.eclipse.sensinact.studio.perspective/META-INF/MANIFEST.MF
++++ b/ui/org.eclipse.sensinact.studio.perspective/META-INF/MANIFEST.MF
+@@ -11,5 +11,6 @@ Export-Package: org.eclipse.sensinact.studio.perspective
+ Require-Bundle: org.eclipse.ui,
+  org.eclipse.sensinact.studio.view.outdoor,
+  org.eclipse.sensinact.studio.navigator.device,
+- org.eclipse.sensinact.studio.view.visualizer
++ org.eclipse.sensinact.studio.view.visualizer,
++ nii.bigclout.eca.adapter
+ Import-Package: org.osgi.framework
+diff --git a/ui/org.eclipse.sensinact.studio.view.projectexplorer/META-INF/MANIFEST.MF b/ui/org.eclipse.sensinact.studio.view.projectexplorer/META-INF/MANIFEST.MF
+index d8aaf1a..1d32b54 100644
+--- a/ui/org.eclipse.sensinact.studio.view.projectexplorer/META-INF/MANIFEST.MF
++++ b/ui/org.eclipse.sensinact.studio.view.projectexplorer/META-INF/MANIFEST.MF
+@@ -13,6 +13,7 @@ Require-Bundle: org.eclipse.ui,
+  org.eclipse.sensinact.studio.model.manager,
+  org.eclipse.sensinact.studio.http.messages,
+  org.eclipse.sensinact.studio.http.services,
++ org.eclipse.sensinact.studio.language.ecaverifier.api,
+  org.apache.log4j,
+  org.eclipse.sensinact.studio.ui.common
+ Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+diff --git a/ui/org.eclipse.sensinact.studio.view.projectexplorer/src/org/eclipse/sensinact/studio/view/projectexplorer/handler/SnaDeployHandler.java b/ui/org.eclipse.sensinact.studio.view.projectexplorer/src/org/eclipse/sensinact/studio/view/projectexplorer/handler/SnaDeployHandler.java
+index d65ca39..abb93f2 100644
+--- a/ui/org.eclipse.sensinact.studio.view.projectexplorer/src/org/eclipse/sensinact/studio/view/projectexplorer/handler/SnaDeployHandler.java
++++ b/ui/org.eclipse.sensinact.studio.view.projectexplorer/src/org/eclipse/sensinact/studio/view/projectexplorer/handler/SnaDeployHandler.java
+@@ -16,24 +16,26 @@ import java.util.List;
+ import org.apache.log4j.Logger;
+ import org.eclipse.core.commands.ExecutionEvent;
+ import org.eclipse.core.commands.ExecutionException;
++import org.eclipse.core.resources.IFile;
+ import org.eclipse.emf.common.util.URI;
+ import org.eclipse.jface.dialogs.MessageDialog;
+ import org.eclipse.jface.window.Window;
+ import org.eclipse.sensinact.studio.http.messages.snamessage.MsgSensinact;
+ import org.eclipse.sensinact.studio.http.services.client.GatewayHttpClient;
++import org.eclipse.sensinact.studio.language.ecaverifier.DeploymentManagerWrapper;
++import org.eclipse.sensinact.studio.language.ecaverifier.api.IDeploymentManager;
++import org.eclipse.sensinact.studio.language.sensinact.DSL_SENSINACT;
+ import org.eclipse.sensinact.studio.model.manager.modelupdater.ModelEditor;
+ import org.eclipse.sensinact.studio.model.resource.utils.Constants;
+ import org.eclipse.sensinact.studio.model.resource.utils.ResourceDescriptor;
+ import org.eclipse.sensinact.studio.model.resource.utils.Segments;
++import org.eclipse.sensinact.studio.resource.AccessMethodType;
++import org.eclipse.sensinact.studio.ui.common.dialog.BasicListDialog;
+ import org.eclipse.sensinact.studio.view.projectexplorer.handler.sna2json.SnaToJsonUtil;
+ import org.eclipse.swt.widgets.Shell;
+ import org.json.JSONException;
+ import org.json.JSONObject;
+ 
+-import org.eclipse.sensinact.studio.language.sensinact.DSL_SENSINACT;
+-import org.eclipse.sensinact.studio.resource.AccessMethodType;
+-import org.eclipse.sensinact.studio.ui.common.dialog.BasicListDialog;
+-
+ /**
+  * @author Etienne Gandrille
+  */
+@@ -41,6 +43,8 @@ public class SnaDeployHandler extends SnaAppHandler {
+ 
+ 	private static final Logger logger = Logger.getLogger(SnaDeployHandler.class);
+ 	
++	private IDeploymentManager deploymentManager = new DeploymentManagerWrapper();
++	
+ 	@Override
+ 	public Object execute(ExecutionEvent event) throws ExecutionException {
+ 			
+@@ -49,6 +53,14 @@ public class SnaDeployHandler extends SnaAppHandler {
+ 		String fileName = computeRuleName(snaFileURI);
+ 		
+ 		try {
++			IFile ifile = null;
++			Object firstElement = getSelectedElement(event);
++			if (firstElement != null && firstElement instanceof IFile) {
++				ifile = (IFile) firstElement;	
++			}
++			deploymentManager.addApp(fileName, ifile.getContents());
++			ifile.getContents().close();
++			
+ 			DSL_SENSINACT sna = fileURI2eca(snaFileURI);
+ 			JSONObject app = generateJsonApplication(sna, fileName);
+ 			
+diff --git a/ui/org.eclipse.sensinact.studio.view.projectexplorer/src/org/eclipse/sensinact/studio/view/projectexplorer/handler/SnaRemoveHandler.java b/ui/org.eclipse.sensinact.studio.view.projectexplorer/src/org/eclipse/sensinact/studio/view/projectexplorer/handler/SnaRemoveHandler.java
+index 0d7458d..99083d0 100644
+--- a/ui/org.eclipse.sensinact.studio.view.projectexplorer/src/org/eclipse/sensinact/studio/view/projectexplorer/handler/SnaRemoveHandler.java
++++ b/ui/org.eclipse.sensinact.studio.view.projectexplorer/src/org/eclipse/sensinact/studio/view/projectexplorer/handler/SnaRemoveHandler.java
+@@ -22,6 +22,8 @@ import org.eclipse.jface.dialogs.MessageDialog;
+ import org.eclipse.jface.window.Window;
+ import org.eclipse.sensinact.studio.http.messages.snamessage.MsgSensinact;
+ import org.eclipse.sensinact.studio.http.services.client.GatewayHttpClient;
++import org.eclipse.sensinact.studio.language.ecaverifier.DeploymentManagerWrapper;
++import org.eclipse.sensinact.studio.language.ecaverifier.api.IDeploymentManager;
+ import org.eclipse.sensinact.studio.model.manager.modelupdater.ModelEditor;
+ import org.eclipse.sensinact.studio.model.resource.utils.Constants;
+ import org.eclipse.sensinact.studio.model.resource.utils.JsonUtil;
+@@ -40,6 +42,8 @@ public class SnaRemoveHandler extends SnaAppHandler {
+ 
+ 	private static final Logger logger = Logger.getLogger(SnaRemoveHandler.class);
+ 	
++	private IDeploymentManager deploymentManager = new DeploymentManagerWrapper();
++	
+ 	@Override
+ 	public Object execute(ExecutionEvent event) throws ExecutionException {
+ 		
+@@ -47,6 +51,7 @@ public class SnaRemoveHandler extends SnaAppHandler {
+ 		String fileName = computeRuleName(snaFileURI);
+ 		
+ 		try {
++			
+ 			List<String> gatewayIds = ModelEditor.getInstance().findApplications().stream().filter(sd -> sd.getService().equals(fileName)).map(sd -> sd.getGateway()).collect(Collectors.toList());
+ 			
+ 			if (gatewayIds.size() == 0) {
+@@ -69,6 +74,9 @@ public class SnaRemoveHandler extends SnaAppHandler {
+ 	}
+ 
+ 	private MsgSensinact uninstall(ResourceDescriptor resource, String name) throws JSONException, IOException {
++
++		deploymentManager.removeApp(name);
++		
+ 		JSONArray jsonParameters = new JSONArray();
+ 		JSONObject info = JsonUtil.createNameTypeValue("name", String.class.getName(), name);
+ 		jsonParameters.put(info);

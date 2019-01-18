@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+<extension point="org.eclipse.core.runtime.adapters">
+      <factory adaptableType="org.eclipse.core.resources.IFile" class="nii.bigclout.sensinact.ecaadapter.models.util.ModelLoadingAdapter">
+         <adapter type="nii.bigclout.ecaadapter.dsl.RunTimeModel" />
+      </factory>
+      <factory adaptableType="org.eclipse.jface.viewers.ISelection" class="nii.bigclout.sensinact.ecaadapter.models.util.ModelLoadingAdapter">
+         <adapter type="nii.bigclout.ecaadapter.dsl.RunTimeModel" />
+      </factory>
+</extension>
+<extension
+      point="org.eclipse.sensinact.studio.language.ecaverifier">
+   <client
+         class="nii.bigclout.sensinact.ecaadapter.controller.AppDeployConflictHandler">
+   </client>
+</extension>
+
+</plugin>

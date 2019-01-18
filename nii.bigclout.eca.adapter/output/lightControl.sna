@@ -1,0 +1,11 @@
+resource aNewResourceName=[localgateway/button/switch/state]
+resource ON=[localgateway/light/switch/turn_on]
+resource OFF=[localgateway/light/switch/turn_off]
+
+on aNewResourceName.subscribe()   
+
+if aNewResourceName.get() == true do
+    ON.act()         
+else do 
+    OFF.act()
+end if

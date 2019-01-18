@@ -1,0 +1,13 @@
+{
+	"resources":[
+		{"name":"pollution_alert", "code":"[localgateway/airPollution/state]"},
+		{"name":"OPEN", "code":"[localgateway/room1/window/switch/open]"},
+		{"name":"CLOSE", "code":"[localgateway/room1/window/switch/close]"}
+	],
+	"event":[
+		{
+			"value":"pollution",
+			"type":"resource"
+		}
+	]
+}

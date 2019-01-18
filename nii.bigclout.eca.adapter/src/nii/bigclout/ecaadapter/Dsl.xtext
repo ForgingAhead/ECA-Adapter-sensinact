@@ -1,0 +1,137 @@
+grammar nii.bigclout.ecaadapter.Dsl with org.eclipse.xtext.common.Terminals
+
+generate dsl "http://www.bigclout.nii/ecaadapter/Dsl"
+
+import "http://www.eclipse.org/emf/2002/Ecore" as ecore
+
+RunTimeModel:
+	{RunTimeModel}	
+	envData += EnvironmentMetaData
+	appData += AppMetaData  	
+;
+
+State: name = ID
+;
+
+Resource:
+	"resource" name=ID
+	("can" "be" states+= State ("," states+=State)*)?
+;	
+AppMetaData:
+	"app" appID=ID 
+	LBRACE
+	specification = Specification
+	RBRACE
+;
+
+Specification:
+	specID=ID ? //or description
+	('priority' priority=INT)?
+	'on' trigger += Trigger ("," trigger += Trigger)*
+	ifdo = IfDoSpec
+	(elseIfDo += ElseIfDoSpec)*
+	elseDo = ElseDoSpec?
+;
+
+Trigger:
+	resource=[Resource] ("is" | "are")
+	state = State
+;
+
+IfDoSpec:
+	'if' condition = OrElement 'do' action += Action ("and" action+=Action)*
+;
+
+ElseIfDoSpec:
+	'else' 'if' condition = OrElement 'do' action += Action ("and" action+=Action)*
+;
+
+ElseDoSpec:
+	'else' 'do' action += Action ("and" action+=Action)*
+;
+
+EnvironmentMetaData:
+	{EnvironmentMetaData}
+	"environment"
+	LBRACE
+	(resources+=Resource)+
+	// maybe some specification that apply globally....
+	RBRACE	
+;
+
+
+Action:
+	resource=[Resource] ":=" state=State	
+;
+
+OrElement returns Element:
+	AndElement ("or" {OrElement.left=current} right=AndElement)*
+;
+
+AndElement returns Element:
+	DiffEqualElement ("and" {AndElement.left=current} right=DiffEqualElement)*
+;
+
+DiffEqualElement returns Element:
+	CompareElement (
+		("!=" {DiffElement.left=current} right=CompareElement) |
+		("==" {EqualElement.left=current} right=CompareElement)
+	)*
+;
+
+CompareElement returns Element:
+	PlusMinusElement(
+		(">" {LargerElement.left=current} right=PlusMinusElement) |
+		(">=" {LargerEqualElement.left=current} right=PlusMinusElement) |
+		("<" {SmallerElement.left=current} right=PlusMinusElement) |
+		("=<" {SmallerEqualElement.left=current} right=PlusMinusElement)
+	)*
+;
+
+PlusMinusElement returns Element:
+	MultiplicationDivisionElement(
+		("+" {PlusElement.left=current} right=MultiplicationDivisionElement) |
+		("-" {MinusElement.left=current} right=MultiplicationDivisionElement)
+	)*
+;
+
+MultiplicationDivisionElement returns Element:
+	UnaryElement (
+		("*" {MultiplicationElement.left=current} right=UnaryElement) |
+		("/" {DivisionElement.left=current} right=UnaryElement) |
+		("%" {ModuloElement.left=current} right=UnaryElement)
+	)*
+;
+
+//TO-DO  more thinking here about the UnaryElement...
+//	{String_Object} value=EXTENDED_STRING |
+UnaryElement returns Element:
+	{Number_Object} value=NUMBER |
+	{Boolean_Object} value=BOOLEAN |
+	{Resource_Object} value=[Resource] ".state"	|
+	{State_Object}	value=State	|
+	"(" OrElement ")" |
+	"not" {NegateElement} exp=UnaryElement
+;
+
+LBRACE: "{";
+RBRACE: "}";
+
+// ============
+// Basic values
+// ============
+
+terminal BOOLEAN returns ecore::EBoolean: 'true' | 'false';
+
+// IMPORTANT : we are mixing terminal and non terminal rules
+//  * terminal rules are parsed in a FIRST & stupid step (but fast) way by the "lexer"
+//  * DataTypes rules are parsed in a SECOND step by the "parser"
+//
+// INFO : remember that terminal rules are executed one after the other, IN THE ORDER OF WRITING
+
+terminal INT returns ecore::EInt: ('0'..'9')+;
+NUMBER returns ecore::EBigDecimal: INT | INT '.' INT; 
+
+terminal ID : ('a'..'z'|'A'..'Z'|'_'|'0'..'9'|':'|'-')+;
+EXTENDED_ID : ID ('.' ID)*;
+EXTENDED_STRING: ID ('.' ID)* ('('')')?;
