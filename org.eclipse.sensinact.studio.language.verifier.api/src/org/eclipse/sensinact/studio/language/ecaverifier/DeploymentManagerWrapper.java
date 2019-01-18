@@ -8,10 +8,14 @@ import org.eclipse.swt.graphics.Rectangle;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
@@ -34,6 +38,7 @@ public class DeploymentManagerWrapper implements IDeploymentManager {
 	//private AdaptMethod studioAdaptMethod;//reflecting back to the studio...
 	private static final String IDEPLOYMENT_MANAGER_ID = "org.eclipse.sensinact.studio.language.ecaverifier";
     
+	private static Map<String, IFile> deployedApps = new HashMap<String, IFile>();
 	
 	public DeploymentManagerWrapper(){
 		//this.studioAdaptMethod = adaptMethod;
@@ -42,6 +47,12 @@ public class DeploymentManagerWrapper implements IDeploymentManager {
 	public static File getBaseFile(){
 		IWorkspace workspace = ResourcesPlugin.getWorkspace();
 		return workspace.getRoot().getLocation().toFile();
+	}
+	
+	public static IFile getFile(String fileName) {
+
+		return deployedApps.get(fileName);
+		
 	}
 	
     private IDeploymentManager getDeploymentManager() {
@@ -159,8 +170,10 @@ public class DeploymentManagerWrapper implements IDeploymentManager {
 
             @Override
             public void run() throws Exception {
-               manager.stopDeployment(ruleID, explanation);
-              // studioAdaptMethod.stopDeployment(ruleID, explanation);
+            	//TODO show some stop deployment dialog...
+            	
+            	
+            	
             }
         };
         SafeRunner.run(runnable);		
@@ -168,7 +181,7 @@ public class DeploymentManagerWrapper implements IDeploymentManager {
 
 
 	@Override
-	public List<ResolvedConflict> addApp(String appID, InputStream appECA) {
+	public List<IdentifiedConflict> addApp(String appID, InputStream appECA) {
 		IDeploymentManager manager = getDeploymentManager();
 		if(manager == null){
 			 LOGGER.log(Level.CONFIG,"No IDeploymentManager available");
@@ -183,21 +196,25 @@ public class DeploymentManagerWrapper implements IDeploymentManager {
             @Override
             public void run() throws Exception {
             	System.out.println("DeploymentManagerWrapper: -> addApp()!!! --- " + appID);////////////test
-            	List<ResolvedConflict> resolved = manager.addApp(appID,appECA);
+            	List<IdentifiedConflict> resolved = manager.addApp(appID,appECA);
+            	
+            	boolean stopDeployment = false;
             	
             	if(resolved != null && resolved.size()!=0) {
-            		ConflictsInfoDialog dialog = new ConflictsInfoDialog(null, resolved);
-            		dialog.create();
-            		dialog.open();
-            		/**
-            		for(ResolvedConflict resolve : resolved) {
-            			
-            			System.out.println("DeploymentManagerWrapper: -> addApp: resolved conflicts NOT empty!");/////////test
-            			
-            			String modified = resolve.getModifiedAppID();
-            			File file = new File(getBaseFile(), "output/"+modified+".sna");
-            			modifyRule(modified, new FileInputStream(file));
-            		} */
+            		
+            		for(IdentifiedConflict resolve : resolved) {
+            			if(resolve.getModifiedAppID() == null) {
+            				stopDeployment  = true;
+            				stopDeployment(null, resolve.getExplanation());
+            				break;
+            			}
+            		}
+            		
+            		if(stopDeployment == false) {
+	                    ConflictsInfoDialog dialog = new ConflictsInfoDialog(null, resolved, false);
+	            		dialog.create();
+	            		dialog.open();   			
+            		}
             	}
             }
         };
@@ -208,7 +225,7 @@ public class DeploymentManagerWrapper implements IDeploymentManager {
 
 
 	@Override
-	public List<ResolvedConflict> removeApp(String appID) {
+	public List<IdentifiedConflict> removeApp(String appID) {
 		IDeploymentManager manager = getDeploymentManager();
 		if(manager == null){
 			 LOGGER.log(Level.CONFIG,"No IDeploymentManager available");
@@ -226,9 +243,19 @@ public class DeploymentManagerWrapper implements IDeploymentManager {
                 manager.removeApp(appID);
             }
         };
+        
         SafeRunner.run(runnable);	
         
         return null;
+	}
+
+	public static void deployed(String name, IFile app) {
+		System.out.println("DeploymentManagerWrapper---> deployed app name: " + name);///////////////////////
+		deployedApps.put(name, app);
+	}
+	
+	public static void undeployed(String name) {
+		deployedApps.remove(name);
 	}
 
 }

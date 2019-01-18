@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.sensinact.studio.language.ecaverifier.ResolvedConflict;
+import org.eclipse.sensinact.studio.language.ecaverifier.IdentifiedConflict;
 import org.eclipse.sensinact.studio.language.ecaverifier.api.IDeploymentManager;
 
 import nii.bigclout.sensinact.ecaadapter.verifier.Conflict;
@@ -82,14 +82,14 @@ public class AppDeployConflictHandler implements IDeploymentManager {
 	
 
 	@Override
-	public List<ResolvedConflict> addApp(String appID, InputStream appECA) {
+	public List<IdentifiedConflict> addApp(String appID, InputStream appECA) {
 		//notify the monitor in the ECA Adapter that a new app is going to be deployed.
 		
 		List<Conflict> conflicts = monitor.notifyAddRule(appID, appECA);
-		List<ResolvedConflict> resolved = new ArrayList<ResolvedConflict>();
+		List<IdentifiedConflict> resolved = new ArrayList<IdentifiedConflict>();
 		if(conflicts!=null) {
 			for(Conflict conf : conflicts) {
-				ResolvedConflict resolve = new ResolvedConflict(conf.getRule1ID(), conf.getRule2ID(), conf.getModified());
+				IdentifiedConflict resolve = new IdentifiedConflict(conf.getRule1ID(), conf.getRule2ID(), conf.getModified());
 				resolved.add(resolve);
 			}
 			return resolved;
@@ -99,7 +99,7 @@ public class AppDeployConflictHandler implements IDeploymentManager {
 	}
 
 	@Override
-	public List<ResolvedConflict> removeApp(String appID) {
+	public List<IdentifiedConflict> removeApp(String appID) {
 		//notify the monitor in the ECA Adapter that an app is going to be un-deployed.
 		monitor.notifyRemoveRule(appID);
 		

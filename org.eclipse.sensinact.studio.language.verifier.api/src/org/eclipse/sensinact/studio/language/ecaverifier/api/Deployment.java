@@ -4,7 +4,7 @@ import java.io.InputStream;
 import java.util.Collection;
 import java.util.List;
 
-import org.eclipse.sensinact.studio.language.ecaverifier.ResolvedConflict;
+import org.eclipse.sensinact.studio.language.ecaverifier.IdentifiedConflict;
 
 /**
  * Simulating the behavior of adding and removing apps by developers from the sensinact studio
@@ -24,13 +24,13 @@ public interface Deployment {
 	 * @param appECA ECA rule of the application. the original .sna file content as InputStream
 	 * 
 	 */
-	public List<ResolvedConflict>  addApp(String appID, InputStream appECA);
+	public List<IdentifiedConflict>  addApp(String appID, InputStream appECA);
 	//Collection<String>
 	/**
 	 * called when the specified application appID is going to be un-deployed in the platform.
 	 * @param appID name of the application, assuming it's the unique identifier for applications deployed under one client...
 	 * 
 	 */
-	public List<ResolvedConflict> removeApp(String appID);	
+	public List<IdentifiedConflict> removeApp(String appID);	
 
 }

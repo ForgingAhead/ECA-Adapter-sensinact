@@ -76,7 +76,7 @@ public class Adaptation implements ModelAdaptationObserver {
 				conf.setModified(conf.getRule2ID());
 				
 				//construct and set new condition for the conflicted application/rule
-				Element newCond = SpecModifier.mergeCondition(conf.getCondition2(), ECAConstants.AND, conf.getCondition1());
+				Element newCond = SpecModifier.mergeCondition(conf.getCondition2(), ECAConstants.AND, SpecModifier.negateElement(conf.getCondition1()));
 				
 				//System.out.println("Adaptation-> the new condition: "+ SpecModelSerialization.element2String(newCond));//////////////testing
 				

@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 import org.apache.log4j.Logger;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.window.Window;
@@ -51,6 +52,7 @@ public class SnaRemoveHandler extends SnaAppHandler {
 		URI snaFileURI = selection2fileURI(event);
 		String fileName = computeRuleName(snaFileURI);
 		
+		
 		try {
 			
 			List<String> gatewayIds = ModelEditor.getInstance().findApplications().stream().filter(sd -> sd.getService().equals(fileName)).map(sd -> sd.getGateway()).collect(Collectors.toList());
@@ -62,6 +64,12 @@ public class SnaRemoveHandler extends SnaAppHandler {
 				if (listDialog.open() == Window.OK) {
 					String gatewayID = listDialog.getFirstResult();
 					MsgSensinact response = uninstall(Constants.createUninstallAppRD(gatewayID), fileName);
+					
+					/**
+					 * For the self-awareness purpose...
+					 */
+					DeploymentManagerWrapper.undeployed(fileName);//////////////////////testing
+					
 					displayResult(getShell(event), "Application removed", fileName, response);					
 				}
 			}

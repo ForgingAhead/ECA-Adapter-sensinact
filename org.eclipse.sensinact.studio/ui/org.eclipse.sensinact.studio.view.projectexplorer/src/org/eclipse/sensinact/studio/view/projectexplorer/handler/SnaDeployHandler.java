@@ -60,6 +60,11 @@ public class SnaDeployHandler extends SnaAppHandler {
 				ifile = (IFile) firstElement;	
 			}
 			
+			/**
+			 * self-aware....
+			 */
+			System.out.println("SnaDeployHandler ---> to be deployed file name: " + fileName);
+			DeploymentManagerWrapper.deployed(fileName, ifile);//////////////////////testing
 			deploymentManager.addApp(fileName, ifile.getContents());
 			
 			ifile.getContents().close();
@@ -76,6 +81,7 @@ public class SnaDeployHandler extends SnaAppHandler {
 					String gatewayID = listDialog.getFirstResult();
 					MsgSensinact response = install(Constants.createInstallAppRD(gatewayID), app);
 					String title = response.isValid() ? "Application deployed" : "Application deploy failed"; 
+					
 					displayResult(shell, title, fileName, response);
 				}
 			}

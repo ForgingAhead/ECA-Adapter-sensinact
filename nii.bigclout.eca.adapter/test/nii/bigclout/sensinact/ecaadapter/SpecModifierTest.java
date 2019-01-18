@@ -26,7 +26,7 @@ public class SpecModifierTest {
 		 * Right now, this method does not work as building a brand new element from the original EMF model is
 		 * not feasible as every element has to be part of a whole to make sense.
 		 */
-		Element newEle = SpecModifier.buildNegateObject(ele);
+		Element newEle = SpecModifier.negateElement(ele);
 		String out = SpecModelSerialization.element2String(newEle);
 		
 		System.out.println(out);

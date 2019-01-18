@@ -22,6 +22,7 @@ import nii.bigclout.sensinact.ecaadapter.controller.ModelAdaptationHandler;
 import nii.bigclout.sensinact.ecaadapter.translator.Translator;
 import nii.bigclout.sensinact.ecaadapter.translator.util.ECAConstants;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 
@@ -132,19 +133,181 @@ public class SpecModifier {
 		
 		ModelAdaptationHandler.addConflictedApp(highPriApp, lowPriApp);
 		
-		SpecModelSerialization.model2filePath(model, lowPriApp);/////////////////////testing the output
+		//TODO sometimes here it has problems with the model - could not be serialized
+		//SpecModelSerialization.model2filePath(model, lowPriApp);/////////////////////testing the output
 		
 		Translator.specModel2snaFilePath(lowPriApp, model);
 	}
 	
 	
-	public static Element buildNegateObject(Element original) {
-		NegateElement result = DslFactory.eINSTANCE.createNegateElement();
-		if(result == null) {
-			System.out.println("NULL NegateElement created from DslFactory!!!");
-		} 
-		result.setExp(original);
+	public static Element negateElement(Element element) {
+		
+		Element result=null;
+		
+		if (element instanceof OrElement) {
+			
+			System.out.println("OrElement ");////////////////////////test
+			
+			result = DslFactory.eINSTANCE.createAndElement();
+			AndElement tmp = (AndElement) result;
+			OrElement or = (OrElement) element;
+			
+			tmp.setRight(negateParameter(or.getRight()));
+			tmp.setLeft(negateParameter(or.getLeft()));
+			
+			return tmp;
+		}
+
+		// And: left associative, priority 2
+		else if (element instanceof AndElement) {
+			System.out.println("Element_And ");////////////////////////test
+			result = DslFactory.eINSTANCE.createOrElement();
+			OrElement tmp = (OrElement) result;
+			AndElement and = (AndElement) element;
+			
+			tmp.setLeft(negateParameter(and.getLeft()));
+			tmp.setRight(negateParameter(and.getRight()));
+			
+			return tmp;
+		}
+
+		// different/equal: left associative, priority 3
+		else if (element instanceof DiffElement) {
+			DiffElement diff = (DiffElement) element;
+			Element left = diff.getLeft();
+			Element right = diff.getRight();
+			
+			System.out.println("Element_Diff ");////////////////////////test
+
+		} else if (element instanceof EqualElement) {
+			//TODO-- there is an error where an extra condition "null.get()== true" is generated.
+			
+			System.out.println("Element_Equal ");////////////////////////test
+			result = DslFactory.eINSTANCE.createEqualElement();
+			EqualElement tmp = (EqualElement) result;
+			EqualElement equal = (EqualElement) element;
+			
+			if(equal.getRight() instanceof Boolean_Object) {
+				tmp.setLeft(equal.getLeft());
+				Boolean_Object bool = (Boolean_Object) equal.getRight();
+				tmp.setRight(buildBooleanObject(!bool.isValue()));
+				return tmp;
+			} else if(equal.getLeft() instanceof Boolean_Object) {
+				tmp.setRight(equal.getRight());
+				Boolean_Object bool = (Boolean_Object) equal.getLeft();
+				tmp.setLeft(buildBooleanObject(!bool.isValue()));
+				return tmp;
+			} else {
+				//TODO negate "=="" left>right || left<right
+				tmp.setLeft(negateParameter(equal.getLeft()));
+				tmp.setRight(negateParameter(equal.getRight()));
+				
+				return tmp;
+			}
+		}
+
+		// Comparisons: left associative, priority 4
+		else if (element instanceof LargerElement) {
+			LargerElement largerThan = (LargerElement) element;
+			Element left = largerThan.getLeft();
+			Element right = largerThan.getRight();
+
+		} else if (element instanceof LargerEqualElement) {
+			LargerEqualElement largerEqual = (LargerEqualElement) element;
+			Element left = largerEqual.getLeft();
+			Element right = largerEqual.getRight();
+
+
+		} else if (element instanceof SmallerElement) {
+			SmallerElement smallerThan = (SmallerElement) element;
+			Element left = smallerThan.getLeft();
+			Element right = smallerThan.getRight();
+
+
+		} else if (element instanceof SmallerEqualElement) {
+			SmallerEqualElement smallerEqual = (SmallerEqualElement) element;
+			Element left = smallerEqual.getLeft();
+			Element right = smallerEqual.getRight();
+
+		}
+
+		// addition/subtraction: left associative, priority 5
+		else if (element instanceof PlusElement) {
+			PlusElement plus = (PlusElement) element;
+			Element left = plus.getLeft();
+			Element right = plus.getRight();
+
+
+		} else if (element instanceof MinusElement) {
+			MinusElement minus = (MinusElement) element;
+			Element left = minus.getLeft();
+			Element right = minus.getRight();
+
+		}
+
+		// multiplication/division/modulo, left associative, priority 6
+		else if (element instanceof MultiplicationElement) {
+			MultiplicationElement multiply = (MultiplicationElement) element;
+			Element left = multiply.getLeft();
+			Element right = multiply.getRight();
+
+
+		} else if (element instanceof DivisionElement) {
+			DivisionElement divide = (DivisionElement) element;
+			Element left = divide.getLeft();
+			Element right = divide.getRight();
+
+
+		} else if (element instanceof ModuloElement) {
+			ModuloElement modulo = (ModuloElement) element;
+			Element left = modulo.getLeft();
+			Element right = modulo.getRight();
+			
+		}
+
+		// Unary operators: right associative, priority 7
+		else if (element instanceof NegateElement) {
+			NegateElement negate = (NegateElement) element;
+			Element exp = negate.getExp();
+			return exp;
+		}
+
+		else 
+			throw new RuntimeException("Should never happend");
+
 		return result;
+	}
+	
+	private static void negateElementInternal(String function, Element...  params) throws IOException {
+		if(params.length > 1) {
+			
+		}
+	}
+	
+	private static Element negateParameter(Element element) {
+		if (element instanceof Number_Object) {
+			
+			return element;//buildNumberObject(((Number_Object)element).getValue());
+
+		} else if (element instanceof State_Object) {
+			//TODO still need to check here whether it's right.
+			State_Object str = (State_Object) element;
+			
+			return element;//buildStringObject(str.getValue());
+
+		} else if (element instanceof Boolean_Object) {
+			Boolean_Object bool = (Boolean_Object) element;
+			//cb.parameter(bool.isValue());
+			return buildBooleanObject(!bool.isValue());
+			
+		} else if (element instanceof Resource_Object) {
+
+			return element;
+
+		} else {
+			return negateElement(element);
+		}
+
 	}
 	
 	
