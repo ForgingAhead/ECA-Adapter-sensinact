@@ -1,12 +1,8 @@
 package org.eclipse.sensinact.studio.language.ecaverifier;
 
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Rectangle;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
@@ -15,7 +11,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
@@ -26,8 +21,6 @@ import org.eclipse.core.runtime.SafeRunner;
 import org.eclipse.sensinact.studio.language.ecaverifier.api.IDeploymentManager;
 import org.eclipse.sensinact.studio.language.ecaverifier.gui.ConflictInfoPopup;
 import org.eclipse.sensinact.studio.language.ecaverifier.gui.ConflictsInfoDialog;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Display;
 //import org.eclipse.sensinact.studio.view.projectexplorer.handler.adapt.AdaptMethod;
 import org.eclipse.swt.widgets.Shell;
 
@@ -241,6 +234,8 @@ public class DeploymentManagerWrapper implements IDeploymentManager {
             public void run() throws Exception {
             	System.out.println("DeploymentManagerWrapper: -> removeApp()!!! --- " + appID);////////////test
                 manager.removeApp(appID);
+                
+                
             }
         };
         

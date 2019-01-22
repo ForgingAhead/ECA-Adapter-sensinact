@@ -1,5 +1,6 @@
 package nii.bigclout.sensinact.ecaadapter.adaptation;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -8,11 +9,13 @@ import nii.bigclout.ecaadapter.dsl.RunTimeModel;
 import nii.bigclout.sensinact.ecaadapter.models.AdaptMethod;
 import nii.bigclout.sensinact.ecaadapter.models.util.SpecModelSerialization;
 import nii.bigclout.sensinact.ecaadapter.models.util.SpecModifier;
+import nii.bigclout.sensinact.ecaadapter.translator.Translator;
 import nii.bigclout.sensinact.ecaadapter.translator.util.ECAConstants;
 import nii.bigclout.sensinact.ecaadapter.verifier.Conflict;
 import nii.bigclout.sensinact.ecaadapter.verifier.ConflictIdentification;
 import nii.bigclout.sensinact.ecaadapter.verifier.ECAVerifier;
 import nii.bigclout.ecaadapter.dsl.Element;
+import nii.bigclout.ecaadapter.dsl.Resource;
 
 /**
  * Adaptation class implements the logic for the Adaptation Engine that handles the analysis, planning of the MAPE loop...
@@ -78,6 +81,15 @@ public class Adaptation implements ModelAdaptationObserver {
 				//construct and set new condition for the conflicted application/rule
 				Element newCond = SpecModifier.mergeCondition(conf.getCondition2(), ECAConstants.AND, SpecModifier.negateElement(conf.getCondition1()));
 				
+				/**
+				ArrayList<Resource> resources = SpecModifier.getResources(conf.getCondition1());
+				model.getEnvData().get(0).getResources().addAll(resources);
+				
+				System.out.println("SpecModifier: to add resources size: " + resources.size());//////////testing
+				for(Resource res : resources) {
+					System.out.println("SpecModifier-> add resource: from "+conf.getRule1ID()+" to "+conf.getRule2ID() + res.getName());
+					Translator.addResource(conf.getRule1ID(), conf.getRule2ID(), res);
+				} */
 				//System.out.println("Adaptation-> the new condition: "+ SpecModelSerialization.element2String(newCond));//////////////testing
 				
 				SpecModifier.setCondition(conf.getRule1ID(), conf.getRule2ID(), model, newCond, conf.getCondition1());

@@ -149,7 +149,7 @@ public class DslParsingTest {
       Assert.assertNotNull(result);
       final EList<Resource.Diagnostic> errors = result.eResource().getErrors();
       StringConcatenation _builder_1 = new StringConcatenation();
-      _builder_1.append("Unexpected errors: Å·errors.join(\", \")Å‚");
+      _builder_1.append("Unexpected errors: \ufffd·errors.join(\", \")\ufffd‚");
       Assert.assertTrue(_builder_1.toString(), errors.isEmpty());
     } catch (Throwable _e) {
       throw Exceptions.sneakyThrow(_e);

@@ -18,6 +18,7 @@ import nii.bigclout.ecaadapter.dsl.SmallerElement;
 import nii.bigclout.ecaadapter.dsl.SmallerEqualElement;
 import nii.bigclout.ecaadapter.dsl.State;
 import nii.bigclout.ecaadapter.dsl.State_Object;
+import nii.bigclout.ecaadapter.dsl.Trigger;
 import nii.bigclout.sensinact.ecaadapter.controller.ModelAdaptationHandler;
 import nii.bigclout.sensinact.ecaadapter.translator.Translator;
 import nii.bigclout.sensinact.ecaadapter.translator.util.ECAConstants;
@@ -120,35 +121,40 @@ public class SpecModifier {
 
 	public static void setCondition(String highPriApp, String lowPriApp, RunTimeModel model, Element newCond, Element addedCond) {
 		
-		//System.out.println("model to be modified: " +lowPriApp+" :\n" + SpecModelSerialization.toString(model));///////////test
-		
+		//1.add resources from the highPriority app to the low priority app, i.e. the to-be-modified app
+		//2. meanwhile, add the triggers.
 		ArrayList<Resource> resources = SpecModifier.getResources(addedCond);
 		model.getEnvData().get(0).getResources().addAll(resources);
 		
+		System.out.println("SpecModifier: to add resources size: " + resources.size());//////////testing
 		for(Resource res : resources) {
+			System.out.println("SpecModifier-> add resource: from "+highPriApp+" to "+lowPriApp + res.getName());
 			Translator.addResource(highPriApp, lowPriApp, res);
-		}
+			
+			model.getAppData().get(0).getSpecification().getTrigger().add(buildTrigger(res));
+		} 
+		
+		//it's impossible to print the new condition because it has no eResource/a resource that contains the new condition
+		//System.out.println("SpecModifier.setCondition: -> newCondition: "+ SpecModelSerialization.element2String(newCond));
 		
 		model.getAppData().get(0).getSpecification().getIfdo().setCondition(newCond);
 		
 		ModelAdaptationHandler.addConflictedApp(highPriApp, lowPriApp);
 		
 		//TODO sometimes here it has problems with the model - could not be serialized
-		//SpecModelSerialization.model2filePath(model, lowPriApp);/////////////////////testing the output
+		SpecModelSerialization.model2filePath(model, lowPriApp);//this is necessary to save the changes.
 		
 		Translator.specModel2snaFilePath(lowPriApp, model);
 	}
 	
 	
 	public static Element negateElement(Element element) {
-		
-		Element result=null;
-		
+		System.out.println("negate Element: "+SpecModelSerialization.element2String(element));
 		if (element instanceof OrElement) {
 			
-			System.out.println("OrElement ");////////////////////////test
+			System.out.println("Negate OrElement ");////////////////////////test
 			
-			result = DslFactory.eINSTANCE.createAndElement();
+			Element result = DslFactory.eINSTANCE.createAndElement();
 			AndElement tmp = (AndElement) result;
 			OrElement or = (OrElement) element;
 			
@@ -160,8 +166,8 @@ public class SpecModifier {
 
 		// And: left associative, priority 2
 		else if (element instanceof AndElement) {
-			System.out.println("Element_And ");////////////////////////test
-			result = DslFactory.eINSTANCE.createOrElement();
+			System.out.println("Negate Element_And ");////////////////////////test
+			Element result = DslFactory.eINSTANCE.createOrElement();
 			OrElement tmp = (OrElement) result;
 			AndElement and = (AndElement) element;
 			
@@ -177,26 +183,50 @@ public class SpecModifier {
 			Element left = diff.getLeft();
 			Element right = diff.getRight();
 			
-			System.out.println("Element_Diff ");////////////////////////test
+			System.out.println("Negate Element_Diff ");////////////////////////test
 
 		} else if (element instanceof EqualElement) {
 			//TODO-- there is an error where an extra condition "null.get()== true" is generated.
 			
-			System.out.println("Element_Equal ");////////////////////////test
-			result = DslFactory.eINSTANCE.createEqualElement();
-			EqualElement tmp = (EqualElement) result;
+			System.out.println("Negate Element_Equal ");////////////////////////test
+			EqualElement tmp = DslFactory.eINSTANCE.createEqualElement();
+			//EqualElement tmp = (EqualElement) result;
 			EqualElement equal = (EqualElement) element;
 			
 			if(equal.getRight() instanceof Boolean_Object) {
-				tmp.setLeft(equal.getLeft());
+				Element left;
+				if(equal.getLeft() instanceof Resource_Object) {
+					System.out.println("before Negate Element equal: left resource");
+					if(((Resource_Object)equal.getLeft()).getValue() == null) {
+						System.out.println("before Negate Element equal: left resource is NULL");
+					}
+				} else {
+					System.out.println("before Negate Element equal: left not resource");
+				}				
+				
+				tmp.setLeft(buildResourceObject(((Resource_Object)equal.getLeft()).getValue()));
 				Boolean_Object bool = (Boolean_Object) equal.getRight();
 				tmp.setRight(buildBooleanObject(!bool.isValue()));
+				System.out.println("Negate Element equal: right boolean "+ bool.isValue());
+				//System.out.println("Left is resource: " + ((Resource_Object)equal.getLeft()).getValue().getName());
+				if(equal.getLeft() instanceof Resource_Object) {
+					System.out.println("after Negate Element equal: left resource");
+					if(((Resource_Object)equal.getLeft()).getValue() == null) {
+						System.out.println("after Negate Element equal: left resource is NULL");
+					}
+				} else {
+					System.out.println("after Negate Element equal: left not resource");
+				}
+				
 				return tmp;
 			} else if(equal.getLeft() instanceof Boolean_Object) {
 				tmp.setRight(equal.getRight());
 				Boolean_Object bool = (Boolean_Object) equal.getLeft();
 				tmp.setLeft(buildBooleanObject(!bool.isValue()));
+				System.out.println("Negate Element equal: left boolean "+ bool.isValue());
+				
 				return tmp;
+				
 			} else {
 				//TODO negate "=="" left>right || left<right
 				tmp.setLeft(negateParameter(equal.getLeft()));
@@ -275,9 +305,9 @@ public class SpecModifier {
 		else 
 			throw new RuntimeException("Should never happend");
 
-		return result;
+		return element;//TODO shouldn't return here...
 	}
-	
+
 	private static void negateElementInternal(String function, Element...  params) throws IOException {
 		if(params.length > 1) {
 			
@@ -301,7 +331,7 @@ public class SpecModifier {
 			return buildBooleanObject(!bool.isValue());
 			
 		} else if (element instanceof Resource_Object) {
-
+			System.out.println("Negate parameter: "+ ((Resource_Object)element).getValue().getName());
 			return element;
 
 		} else {
@@ -341,6 +371,13 @@ public class SpecModifier {
 		return result;
 	}
 	
+	public static Trigger buildTrigger(Resource rs) {
+		Trigger trigger = DslFactory.eINSTANCE.createTrigger();
+		trigger.setResource(rs);
+		trigger.setState(buildState("triggered"));
+		return trigger;
+	}
+	
 	/**
 	 * 
 	 * @param element
@@ -351,19 +388,24 @@ public class SpecModifier {
 		
 		if(element != null) {
 			if(element instanceof Resource_Object) {
+				System.out.println("Get resource name: "+ ((Resource_Object)element ).getValue().getName());
 				results.add( ((Resource_Object)element ).getValue() );
 				return results;
 				
 			}  else if (element instanceof Number_Object) {
+				System.out.println("Get resource Number_Object: " + ((Number_Object)element).getValue().toString());
 				return results;
 
 			} else if (element instanceof State_Object) {
+				System.out.println("Get resource State_Object: " + ((State_Object)element).getValue().getName());
 				return results;
 
 			} else if (element instanceof Boolean_Object) {
+				System.out.println("Get resource Boolean_Object: " + ((Boolean_Object)element).isValue());
 				return results;
 				
 			} else if( element instanceof OrElement) {
+			
 				OrElement tmp = (OrElement) element;
 				Element left = tmp.getLeft();
 				Element right = tmp.getRight();
@@ -382,7 +424,7 @@ public class SpecModifier {
 				Element left = diff.getLeft();
 				Element right = diff.getRight();
 				
-				System.out.println("Element_Diff ");////////////////////////test
+				System.out.println("Get resource->Element_Diff ");////////////////////////test
 				results.addAll(getResources(left));
 				results.addAll(getResources(right));
 
@@ -391,7 +433,7 @@ public class SpecModifier {
 				Element left = equal.getLeft();
 				Element right = equal.getRight();
 				
-				System.out.println("Element_Equal ");////////////////////////test
+				System.out.println("Get resource->Element_Equal ");////////////////////////test
 				
 				results.addAll(getResources(left));
 				results.addAll(getResources(right));
@@ -482,8 +524,12 @@ public class SpecModifier {
 				Element ele = negate.getExp();
 
 				results.addAll(getResources(ele));
+			} else {
+				System.out.println("Get resources, shouldn't be here, type not matched");
 			}
 
+		} else {
+			System.out.println("Get resource, null pointer element....");
 		}
 		
 		return results;
