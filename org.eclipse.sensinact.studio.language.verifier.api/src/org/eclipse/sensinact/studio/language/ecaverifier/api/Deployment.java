@@ -26,6 +26,7 @@ public interface Deployment {
 	 */
 	public List<IdentifiedConflict>  addApp(String appID, InputStream appECA);
 	//Collection<String>
+	
 	/**
 	 * called when the specified application appID is going to be un-deployed in the platform.
 	 * @param appID name of the application, assuming it's the unique identifier for applications deployed under one client...

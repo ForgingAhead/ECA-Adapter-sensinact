@@ -20,12 +20,12 @@ public class NewInstallationSimulator {
 	 */
 	public void addNewApp(String appID, InputStream appECA) {
 		System.out.println("\n**step 1.** A new app is going to be installed, App ID: " + appID + ", app ECA rules: " + appECA); //for mock purpose
-		conflictHandler.addApp(appID, appECA);
+		//conflictHandler.addApp(appID, appECA);
 	}
 	
 	public void undeployApp(String appID) {
 		System.out.println("\n**step 1.** An app is going to be un-deployed, App ID: " + appID);
-		conflictHandler.removeApp(appID);
+		//conflictHandler.removeApp(appID);
 	}
 	
 	public static void main(String[] args) {

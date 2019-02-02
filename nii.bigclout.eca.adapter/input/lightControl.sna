@@ -1,11 +1,18 @@
 resource button=[localgateway/button/switch/state]
+
 resource ON=[localgateway/light/switch/turn_on]
+
 resource OFF=[localgateway/light/switch/turn_off]
+
+
 
 on button.subscribe()   
 
-if button.get() == true do
+
+if button.get() == true 
+do
     ON.act()         
+
 else do 
     OFF.act()
 end if

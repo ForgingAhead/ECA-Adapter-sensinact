@@ -35,7 +35,7 @@ Specification:
 
 Trigger:
 	resource=[Resource] ("is" | "are")
-	state = State
+	state = State // in fact, it's a fixed state, i.e. "triggered" just as ".subscribe()"
 ;
 
 IfDoSpec:

@@ -26,6 +26,7 @@ import nii.bigclout.sensinact.ecaadapter.translator.util.ECAConstants;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.List;
 
 import nii.bigclout.ecaadapter.dsl.AndElement;
 import nii.bigclout.ecaadapter.dsl.Boolean_Object;
@@ -34,6 +35,17 @@ import nii.bigclout.ecaadapter.dsl.DivisionElement;
 import nii.bigclout.ecaadapter.dsl.DslFactory;
 
 public class SpecModifier {
+	
+	private static List<Resource> newResources = new ArrayList<Resource>();
+	
+	public static RunTimeModel resolveConflict(String highPriApp, String lowPriApp, Element highPriElement, Element lowPriElement, RunTimeModel model) {
+		//TODO better to have a new model... as copy one....
+		Element highPriElementCopy = copyElement(highPriElement);
+		mergeResources(highPriApp, lowPriApp, model, highPriElementCopy);
+		Element newCond = mergeCondition(lowPriElement, ECAConstants.AND, negateElement(highPriElementCopy));
+		setCondition(highPriApp, lowPriApp, model, newCond);
+		return model;
+	}
 	
 	/**
 	 * Construct a new condition by combining the two specified elements with the specified operator
@@ -118,11 +130,31 @@ public class SpecModifier {
 		
 		return null;
 	}
+	
+	public static void mergeResources(String highPriApp, String lowPriApp, RunTimeModel model, Element toAddCond) {
 
-	public static void setCondition(String highPriApp, String lowPriApp, RunTimeModel model, Element newCond, Element addedCond) {
+		ArrayList<Resource> resources = SpecModifier.getResources(toAddCond);
+		
+		newResources.clear();
+		for(Resource rs : resources) {
+			System.out.println("merge resources: -> add to the other model : "+ rs.getName());
+			model.getEnvData().get(0).getResources().add(rs);
+			model.getAppData().get(0).getSpecification().getTrigger().add(buildTrigger(rs));			
+		}
+		
+		System.out.println("SpecModifier: to add resources size: " + resources.size());//////////testing
+		for(Resource res : resources) {
+			System.out.println("SpecModifier-> add resource: from "+highPriApp+" to "+lowPriApp + res.getName());
+			Translator.addResource(highPriApp, lowPriApp, res);
+			
+			}	
+	}
+
+	public static void setCondition(String highPriApp, String lowPriApp, RunTimeModel model, Element newCond) {
 		
 		//1.add resources from the highPriority app to the low priority app, i.e. the to-be-modified app
 		//2. meanwhile, add the triggers.
+		/**
 		ArrayList<Resource> resources = SpecModifier.getResources(addedCond);
 		model.getEnvData().get(0).getResources().addAll(resources);
 		
@@ -132,7 +164,7 @@ public class SpecModifier {
 			Translator.addResource(highPriApp, lowPriApp, res);
 			
 			model.getAppData().get(0).getSpecification().getTrigger().add(buildTrigger(res));
-		} 
+		}  */
 		
 		//it's impossible to print the new condition because it has no eResource/a resource that contains the new condition
 		//System.out.println("SpecModifier.setCondition: -> newCondition: "+ SpecModelSerialization.element2String(newCond));
@@ -149,7 +181,7 @@ public class SpecModifier {
 	
 	
 	public static Element negateElement(Element element) {
-		System.out.println("negate Element: "+SpecModelSerialization.element2String(element));
+		//System.out.println("negate Element: "+SpecModelSerialization.element2String(element));
 		if (element instanceof OrElement) {
 			
 			System.out.println("Negate OrElement ");////////////////////////test
@@ -179,86 +211,190 @@ public class SpecModifier {
 
 		// different/equal: left associative, priority 3
 		else if (element instanceof DiffElement) {
+			System.out.println("Negate Diff Element");
+			EqualElement equal = DslFactory.eINSTANCE.createEqualElement();
 			DiffElement diff = (DiffElement) element;
-			Element left = diff.getLeft();
-			Element right = diff.getRight();
+			equal.setLeft(diff.getLeft());
+			equal.setRight(diff.getRight());
 			
-			System.out.println("Negate Element_Diff ");////////////////////////test
+			return equal;
 
 		} else if (element instanceof EqualElement) {
 			//TODO-- there is an error where an extra condition "null.get()== true" is generated.
 			
 			System.out.println("Negate Element_Equal ");////////////////////////test
-			EqualElement tmp = DslFactory.eINSTANCE.createEqualElement();
-			//EqualElement tmp = (EqualElement) result;
+			DiffElement diff = DslFactory.eINSTANCE.createDiffElement();
 			EqualElement equal = (EqualElement) element;
+			diff.setLeft(equal.getLeft());
+			diff.setRight(equal.getRight());
 			
-			if(equal.getRight() instanceof Boolean_Object) {
-				Element left;
-				if(equal.getLeft() instanceof Resource_Object) {
-					System.out.println("before Negate Element equal: left resource");
-					if(((Resource_Object)equal.getLeft()).getValue() == null) {
-						System.out.println("before Negate Element equal: left resource is NULL");
-					}
-				} else {
-					System.out.println("before Negate Element equal: left not resource");
-				}				
-				
-				tmp.setLeft(buildResourceObject(((Resource_Object)equal.getLeft()).getValue()));
-				Boolean_Object bool = (Boolean_Object) equal.getRight();
-				tmp.setRight(buildBooleanObject(!bool.isValue()));
-				System.out.println("Negate Element equal: right boolean "+ bool.isValue());
-				//System.out.println("Left is resource: " + ((Resource_Object)equal.getLeft()).getValue().getName());
-				if(equal.getLeft() instanceof Resource_Object) {
-					System.out.println("after Negate Element equal: left resource");
-					if(((Resource_Object)equal.getLeft()).getValue() == null) {
-						System.out.println("after Negate Element equal: left resource is NULL");
-					}
-				} else {
-					System.out.println("after Negate Element equal: left not resource");
-				}
-				
-				return tmp;
-			} else if(equal.getLeft() instanceof Boolean_Object) {
-				tmp.setRight(equal.getRight());
-				Boolean_Object bool = (Boolean_Object) equal.getLeft();
-				tmp.setLeft(buildBooleanObject(!bool.isValue()));
-				System.out.println("Negate Element equal: left boolean "+ bool.isValue());
-				
-				return tmp;
-				
-			} else {
-				//TODO negate "=="" left>right || left<right
-				tmp.setLeft(negateParameter(equal.getLeft()));
-				tmp.setRight(negateParameter(equal.getRight()));
-				
-				return tmp;
-			}
+			return diff;
+
 		}
 
 		// Comparisons: left associative, priority 4
 		else if (element instanceof LargerElement) {
+			SmallerEqualElement smallerEle = DslFactory.eINSTANCE.createSmallerEqualElement();
 			LargerElement largerThan = (LargerElement) element;
-			Element left = largerThan.getLeft();
-			Element right = largerThan.getRight();
+			smallerEle.setLeft(largerThan.getLeft());
+			smallerEle.setRight(largerThan.getRight());
+			
+			return smallerEle;
 
 		} else if (element instanceof LargerEqualElement) {
+			SmallerElement smallerThan = DslFactory.eINSTANCE.createSmallerElement();
 			LargerEqualElement largerEqual = (LargerEqualElement) element;
-			Element left = largerEqual.getLeft();
-			Element right = largerEqual.getRight();
+			smallerThan.setLeft(largerEqual.getLeft());
+			smallerThan.setRight(largerEqual.getRight());
 
-
+			return smallerThan;
+			
 		} else if (element instanceof SmallerElement) {
+			LargerEqualElement largerThan = DslFactory.eINSTANCE.createLargerEqualElement();
 			SmallerElement smallerThan = (SmallerElement) element;
-			Element left = smallerThan.getLeft();
-			Element right = smallerThan.getRight();
+			largerThan.setLeft(smallerThan.getLeft());
+			largerThan.setRight(smallerThan.getRight());
 
+			return largerThan;
 
 		} else if (element instanceof SmallerEqualElement) {
+			LargerElement largerThan = DslFactory.eINSTANCE.createLargerElement();
 			SmallerEqualElement smallerEqual = (SmallerEqualElement) element;
-			Element left = smallerEqual.getLeft();
-			Element right = smallerEqual.getRight();
+			largerThan.setLeft(smallerEqual.getLeft());
+			largerThan.setRight(smallerEqual.getRight());
 
+			return largerThan;
+		}
+
+		// addition/subtraction: left associative, priority 5
+		else if (element instanceof PlusElement) {
+			//DO nothing...
+			return element;
+
+		} else if (element instanceof MinusElement) {
+			//Do nothing
+			return element;
+		}
+
+		// multiplication/division/modulo, left associative, priority 6
+		else if (element instanceof MultiplicationElement) {
+			//MultiplicationElement multiply = (MultiplicationElement) element;
+			//Element left = multiply.getLeft();
+			//Element right = multiply.getRight();
+
+			return element;
+			
+		} else if (element instanceof DivisionElement) {
+			//DivisionElement divide = (DivisionElement) element;
+			//Element left = divide.getLeft();
+			//Element right = divide.getRight();
+
+			return element;
+			
+		} else if (element instanceof ModuloElement) {
+			//ModuloElement modulo = (ModuloElement) element;
+			//Element left = modulo.getLeft();
+			//Element right = modulo.getRight();
+			return element;
+		}
+
+		// Unary operators: right associative, priority 7
+		else if (element instanceof NegateElement) {
+			NegateElement negate = (NegateElement) element;
+			Element exp = negate.getExp();
+			return exp;
+		}
+
+		else 
+			throw new RuntimeException("Should never happend");
+	}
+	
+	private static Element copyElement(Element element) {
+		if (element instanceof Number_Object) {
+			
+			return buildNumberObject(((Number_Object)element).getValue());
+
+		} else if (element instanceof State_Object) {
+			//TODO still need to check here whether it's right.
+			State_Object str = (State_Object) element;
+			
+			return buildStringObject(str.getValue());
+
+		} else if (element instanceof Boolean_Object) {
+			Boolean_Object bool = (Boolean_Object) element;
+
+			return buildBooleanObject(bool.isValue());
+			
+		} else if (element instanceof Resource_Object) {
+			
+			return buildResourceObject(((Resource_Object)element).getValue());
+			
+		} else if (element instanceof OrElement) {
+			OrElement newOr = DslFactory.eINSTANCE.createOrElement();
+			OrElement or = (OrElement) element;
+			newOr.setLeft(copyElement(or.getLeft()));
+			newOr.setRight(copyElement(or.getRight()));
+			return newOr;
+		}
+
+		// And: left associative, priority 2
+		else if (element instanceof AndElement) {
+			AndElement newAnd = DslFactory.eINSTANCE.createAndElement();
+			AndElement and = (AndElement) element;
+			newAnd.setLeft(copyElement(and.getLeft()));
+			newAnd.setRight(copyElement(and.getRight()));
+			return newAnd;
+		}
+
+		// different/equal: left associative, priority 3
+		else if (element instanceof DiffElement) {
+			DiffElement newDiff = DslFactory.eINSTANCE.createDiffElement();
+			DiffElement diff = (DiffElement) element;
+			newDiff.setLeft(copyElement(diff.getLeft()));
+			newDiff.setRight(copyElement(diff.getRight()));
+			
+			return newDiff;
+			
+		} else if (element instanceof EqualElement) {
+			EqualElement newEqual = DslFactory.eINSTANCE.createEqualElement();
+			EqualElement equal = (EqualElement) element;
+			newEqual.setLeft(copyElement(equal.getLeft()));
+			newEqual.setRight(copyElement(equal.getRight()));
+			
+			return newEqual;
+		}
+
+		// Comparisons: left associative, priority 4
+		else if (element instanceof LargerElement) {
+			LargerElement newLarger = DslFactory.eINSTANCE.createLargerElement();
+			LargerElement largerThan = (LargerElement) element;
+			newLarger.setLeft(copyElement(largerThan.getLeft()));
+			newLarger.setRight(copyElement(largerThan.getRight()));
+
+			return newLarger;
+
+		} else if (element instanceof LargerEqualElement) {
+			LargerEqualElement newLE = DslFactory.eINSTANCE.createLargerEqualElement();
+			LargerEqualElement largerEqual = (LargerEqualElement) element;
+			newLE.setLeft(copyElement(largerEqual.getLeft()));
+			newLE.setRight(copyElement(largerEqual.getRight()));
+
+			return newLE;
+
+		} else if (element instanceof SmallerElement) {
+			SmallerElement newSmaller = DslFactory.eINSTANCE.createSmallerElement();
+			SmallerElement smallerThan = (SmallerElement) element;
+			newSmaller.setLeft(copyElement(smallerThan.getLeft()));
+			newSmaller.setRight(copyElement(smallerThan.getRight()));
+
+			return newSmaller;
+
+		} else if (element instanceof SmallerEqualElement) {
+			SmallerEqualElement newSE = DslFactory.eINSTANCE.createSmallerEqualElement();
+			SmallerEqualElement smallerEqual = (SmallerEqualElement) element;
+			newSE.setLeft(copyElement(smallerEqual.getLeft()));
+			newSE.setRight(copyElement(smallerEqual.getRight()));
+			return newSE;
 		}
 
 		// addition/subtraction: left associative, priority 5
@@ -273,6 +409,7 @@ public class SpecModifier {
 			Element left = minus.getLeft();
 			Element right = minus.getRight();
 
+
 		}
 
 		// multiplication/division/modulo, left associative, priority 6
@@ -282,30 +419,34 @@ public class SpecModifier {
 			Element right = multiply.getRight();
 
 
+
 		} else if (element instanceof DivisionElement) {
 			DivisionElement divide = (DivisionElement) element;
 			Element left = divide.getLeft();
 			Element right = divide.getRight();
 
 
+
 		} else if (element instanceof ModuloElement) {
 			ModuloElement modulo = (ModuloElement) element;
 			Element left = modulo.getLeft();
 			Element right = modulo.getRight();
-			
+
 		}
 
 		// Unary operators: right associative, priority 7
 		else if (element instanceof NegateElement) {
 			NegateElement negate = (NegateElement) element;
 			Element exp = negate.getExp();
-			return exp;
+
 		}
-
-		else 
-			throw new RuntimeException("Should never happend");
-
-		return element;//TODO shouldn't return here...
+		
+		else {
+			System.out.println("copy Element--> Not in scope yet: "+ SpecModelSerialization.element2String(element));
+		}
+		
+		
+		return null;
 	}
 
 	private static void negateElementInternal(String function, Element...  params) throws IOException {
@@ -340,6 +481,14 @@ public class SpecModifier {
 
 	}
 	
+	public static Resource buildResource(Resource res) {
+		Resource result = DslFactory.eINSTANCE.createResource();
+		result.setName(res.getName());
+		for(State st : res.getStates()) {
+			result.getStates().add(buildState(st.getName()));
+		}
+		return result;
+	}
 	
 	public static Number_Object buildNumberObject(BigDecimal num) {
 		Number_Object result = DslFactory.eINSTANCE.createNumber_Object();
@@ -349,7 +498,7 @@ public class SpecModifier {
 	
 	public static Resource_Object buildResourceObject(Resource res) {
 		Resource_Object result = DslFactory.eINSTANCE.createResource_Object();
-		result.setValue(res);
+		result.setValue(buildResource(res));
 		return result;
 	}
 	
@@ -374,6 +523,10 @@ public class SpecModifier {
 	public static Trigger buildTrigger(Resource rs) {
 		Trigger trigger = DslFactory.eINSTANCE.createTrigger();
 		trigger.setResource(rs);
+		if(rs.getStates().get(0).getName().equals("triggered")) {
+			System.out.println("build trigger -> this resource has a state called triggered: "+rs.getName());
+		}
+		
 		trigger.setState(buildState("triggered"));
 		return trigger;
 	}

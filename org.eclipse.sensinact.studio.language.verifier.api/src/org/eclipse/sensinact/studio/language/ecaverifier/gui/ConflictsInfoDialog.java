@@ -53,7 +53,7 @@ public class ConflictsInfoDialog  extends TitleAreaDialog{
 	public void create() {
 		super.create();
 		setTitle("Application Conflicts Identified");
-		setShellStyle(SWT.DIALOG_TRIM | SWT.RESIZE | SWT.MAX);
+		setShellStyle(getShellStyle() |  SWT.RESIZE | SWT.MAX);
 		
 	}
 	
@@ -66,9 +66,9 @@ public class ConflictsInfoDialog  extends TitleAreaDialog{
 		resultLabel = new Label(area, SWT.NONE);
 		resultLabel.setText("Conflicts are identified between the following apps: ");
 		
-		resultText = new Text(area, SWT.BORDER | SWT.READ_ONLY | SWT.MULTI | SWT.WRAP | SWT.V_SCROLL);
+		resultText = new Text(area, SWT.BORDER | SWT.RESIZE | SWT.READ_ONLY | SWT.MULTI | SWT.WRAP | SWT.V_SCROLL);
 		GridData gridData = new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1);
-		gridData.heightHint = 6 * resultText.getLineHeight();
+		gridData.heightHint = 13 * resultText.getLineHeight();
 		resultText.setLayoutData(gridData);
 		setText(getConflicts());
 		return area;
@@ -209,7 +209,7 @@ public class ConflictsInfoDialog  extends TitleAreaDialog{
 	        String line = br.readLine();
 
 	        while (line != null) {
-	        	if(line.length()<=2) {
+	        	if(line.trim().isEmpty()) {
 	        		line = br.readLine();
 	        		continue;
 	        	}

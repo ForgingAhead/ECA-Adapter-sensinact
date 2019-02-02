@@ -9,6 +9,8 @@ public class IdentifiedConflict {
 	
 	private String explanation;
 	
+	private ResolutionType resolution_type;
+	
 	public IdentifiedConflict() {
 		
 	}
@@ -17,6 +19,12 @@ public class IdentifiedConflict {
 		appID1 = app1;
 		appID2 = app2;
 		modifiedAppID = modified;
+		if(modified == null) {
+			setResolutionType(ResolutionType.STOP_DEPLOYMENT);
+			explanation = "We have identified conflict between the IoT applications \'" + app1 +"\' and \'" +
+							app2+"\'. However, we have not found a solution to resolve the conflict. ";
+		}
+		else resolution_type = ResolutionType.MODIFY_RULE;//TODO to be modified later... should be more possibilities
 	}
 	
 	public IdentifiedConflict(String app1, String app2) {
@@ -54,5 +62,13 @@ public class IdentifiedConflict {
 
 	public String getExplanation() {
 		return this.explanation;
+	}
+	
+	public void setResolutionType(ResolutionType type) {
+		this.resolution_type = type;
+	}
+	
+	public ResolutionType getResolutionType() {
+		return this.resolution_type;
 	}
 }

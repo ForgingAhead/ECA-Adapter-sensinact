@@ -9,16 +9,19 @@ import nii.bigclout.ecaadapter.dsl.RunTimeModel;
 
 
 public class ConflictIdentification implements ECAVerifier{
+	
+	private static List<Conflict> conflicts = new ArrayList<Conflict>();
 
 	@Override
 	public List<Conflict> checkConflict(Collection<RunTimeModel> models, RunTimeModel model) {
 		// TODO Auto-generated method stub
+		conflicts.clear();
 		if(models == null || models.isEmpty()) {
 			if(models.isEmpty())
 				System.out.println("ConflictIdentification--------the collection of models is empty");
 			return null;
 		} else {
-			//for now, hard code one example for testing the overall flow only
+			//TODO for now, hard code one example for testing the overall flow only
 			RunTimeModel tmp = models.iterator().next();
 			
 			Conflict conf = new Conflict();
@@ -27,10 +30,9 @@ public class ConflictIdentification implements ECAVerifier{
 			conf.setCondition1(tmp.getAppData().get(0).getSpecification().getIfdo().getCondition());
 			conf.setCondition2(model.getAppData().get(0).getSpecification().getIfdo().getCondition());
 			
-			ArrayList<Conflict> list = new ArrayList<Conflict>();
-			list.add(conf);
+			conflicts.add(conf);
 			
-			return list;
+			return conflicts;
 		}
 	}
 

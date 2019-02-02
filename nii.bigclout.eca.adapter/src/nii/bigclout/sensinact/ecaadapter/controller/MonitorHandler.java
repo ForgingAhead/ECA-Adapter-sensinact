@@ -2,6 +2,7 @@ package nii.bigclout.sensinact.ecaadapter.controller;
 
 import java.io.File;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.sensinact.studio.language.ecaverifier.api.ConflictAdaptation;
@@ -77,8 +78,8 @@ public class MonitorHandler implements Monitor{
 	
 
 	@Override
-	public void notifyRemoveRule(String appID) {
-		
+	public List<Conflict> notifyRemoveRule(String appID) {
+		List<Conflict> conflicts = null;
 		//first of all, remove the spec model in the model manager.
 		modelMgr.removeModel(appID);
 		adaptMgr.update(Adaptation.REMOVE, appID, null);
@@ -86,6 +87,9 @@ public class MonitorHandler implements Monitor{
 		System.out.println("\n****MonitorHandler - remove rule: " + appID);///////////testing////////////
 		
 		if(ModelAdaptationHandler.isHighPrioApp(appID) == true) {
+			
+			conflicts = new ArrayList<Conflict> ();
+			
 			//if the appID was among the ones that used to have conflict with other app(s) but has NOT been changed
 			//meaning it is the one that has higher priority.
 			//make the adapted app back to its original eca rule...
@@ -98,7 +102,9 @@ public class MonitorHandler implements Monitor{
 				String tmpPath = Translator.snaFilePath2specFilePath(filePath);
 				
 				modelMgr.modifyModel(adaptedAppID, SpecModelLoader.loadModelFromFile(tmpPath));
-				
+				Conflict tmp = new Conflict(adaptedAppID, appID);
+				tmp.setModified(adaptedAppID);
+				conflicts.add(tmp);
 			}
 			
 			ModelAdaptationHandler.removeConflictedHighPrioApp(appID);
@@ -108,6 +114,8 @@ public class MonitorHandler implements Monitor{
 			//but we need to update the recorded map of adaptedApps in the ModelAdaptationHandler
 			ModelAdaptationHandler.removeConflictedLowPrioApp(appID);
 		}
+		
+		return conflicts;
 		
 	}
 

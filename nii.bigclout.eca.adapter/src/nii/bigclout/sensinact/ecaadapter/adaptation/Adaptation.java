@@ -78,23 +78,14 @@ public class Adaptation implements ModelAdaptationObserver {
 				
 				conf.setModified(conf.getRule2ID());
 				
+				RunTimeModel toModifyModel = models.get(conf.getRule2ID());
+				if(toModifyModel == null)
+					toModifyModel = model;
+				
 				//construct and set new condition for the conflicted application/rule
-				Element newCond = SpecModifier.mergeCondition(conf.getCondition2(), ECAConstants.AND, SpecModifier.negateElement(conf.getCondition1()));
+				RunTimeModel newModel = SpecModifier.resolveConflict(conf.getRule1ID(), conf.getRule2ID(), conf.getCondition1(), conf.getCondition2(), toModifyModel);
 				
-				/**
-				ArrayList<Resource> resources = SpecModifier.getResources(conf.getCondition1());
-				model.getEnvData().get(0).getResources().addAll(resources);
-				
-				System.out.println("SpecModifier: to add resources size: " + resources.size());//////////testing
-				for(Resource res : resources) {
-					System.out.println("SpecModifier-> add resource: from "+conf.getRule1ID()+" to "+conf.getRule2ID() + res.getName());
-					Translator.addResource(conf.getRule1ID(), conf.getRule2ID(), res);
-				} */
-				//System.out.println("Adaptation-> the new condition: "+ SpecModelSerialization.element2String(newCond));//////////////testing
-				
-				SpecModifier.setCondition(conf.getRule1ID(), conf.getRule2ID(), model, newCond, conf.getCondition1());
-				
-				adaptMethod.modifyModel(appID, model);//indicating conflict resolved by modifying the model...
+				adaptMethod.modifyModel(appID, newModel);//indicating conflict resolved by modifying the model...
 			}
 			
 		}

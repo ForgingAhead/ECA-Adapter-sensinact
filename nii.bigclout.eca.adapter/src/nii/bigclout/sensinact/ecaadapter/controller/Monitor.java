@@ -20,7 +20,7 @@ public interface Monitor {
 	 * This method is called to notify that an app is undeployed in the platform.
 	 * @param appID the name of the app, i.e. the file name of the .sna file in the sensinact studio
 	 */
-	public void notifyRemoveRule(String appID);
+	public List<Conflict> notifyRemoveRule(String appID);
 	
 	/**
 	 * This method is called when a new app is installed in the platform

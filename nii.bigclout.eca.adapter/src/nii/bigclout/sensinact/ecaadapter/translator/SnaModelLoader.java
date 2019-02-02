@@ -13,12 +13,14 @@ import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.emf.ecore.xmi.impl.EcoreResourceFactoryImpl;
+import org.eclipse.sensinact.studio.language.SensinactRuntimeModule;
 import org.eclipse.sensinact.studio.language.SensinactStandaloneSetupGenerated;
 import org.eclipse.sensinact.studio.language.sensinact.DSL_SENSINACT;
 import org.eclipse.sensinact.studio.language.sensinact.Sensinact;
 import org.eclipse.xtext.resource.XtextResource;
 import org.eclipse.xtext.resource.XtextResourceSet;
 
+import com.google.inject.Guice;
 import com.google.inject.Injector;
 
 import nii.bigclout.sensinact.ecaadapter.controller.AppDeployConflictHandler;
@@ -69,6 +71,7 @@ public class SnaModelLoader {
 		
 		Resource.Factory.Registry.INSTANCE.getExtensionToFactoryMap().put("sna", new EcoreResourceFactoryImpl ());
 		Injector injector = new SensinactStandaloneSetupGenerated().createInjectorAndDoEMFRegistration();
+		//Injector injector = Guice.createInjector(new SensinactRuntimeModule());
 		XtextResourceSet resourceSet = injector.getInstance(XtextResourceSet.class);
 		resourceSet.addLoadOption(XtextResource.OPTION_RESOLVE_ALL, Boolean.TRUE);
 		
@@ -106,7 +109,8 @@ public class SnaModelLoader {
 	public static DSL_SENSINACT loadModel_standalone(URI uri) {
 		
 		Resource.Factory.Registry.INSTANCE.getExtensionToFactoryMap().put("sna", new EcoreResourceFactoryImpl ());
-		Injector injector = new SensinactStandaloneSetupGenerated().createInjectorAndDoEMFRegistration();
+		//Injector injector = new SensinactStandaloneSetupGenerated().createInjectorAndDoEMFRegistration();
+		Injector injector = Guice.createInjector(new SensinactRuntimeModule());
 		XtextResourceSet resourceSet = injector.getInstance(XtextResourceSet.class);
 		resourceSet.addLoadOption(XtextResource.OPTION_RESOLVE_ALL, Boolean.TRUE);
 		System.out.println("URI to translate to eca: " + uri.toString());

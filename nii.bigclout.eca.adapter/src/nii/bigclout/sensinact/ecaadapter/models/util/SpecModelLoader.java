@@ -21,8 +21,11 @@ import org.eclipse.emf.ecore.xmi.impl.EcoreResourceFactoryImpl;
 import org.eclipse.xtext.resource.XtextResource;
 import org.eclipse.xtext.resource.XtextResourceSet;
 
+import com.google.inject.Guice;
 import com.google.inject.Injector;
+import com.google.inject.Module;
 
+import nii.bigclout.ecaadapter.DslRuntimeModule;
 import nii.bigclout.ecaadapter.DslStandaloneSetupGenerated;
 import nii.bigclout.ecaadapter.dsl.RunTimeModel;
 import nii.bigclout.sensinact.ecaadapter.controller.AppDeployConflictHandler;
@@ -64,10 +67,13 @@ public class SpecModelLoader {
 		
 		Resource.Factory.Registry.INSTANCE.getExtensionToFactoryMap().put("spec", new EcoreResourceFactoryImpl ());
 		Injector injector = new DslStandaloneSetupGenerated().createInjectorAndDoEMFRegistration();
+		//Injector injector = Guice.createInjector(new DslRuntimeModule());
 		XtextResourceSet resourceSet = injector.getInstance(XtextResourceSet.class);
 		resourceSet.addLoadOption(XtextResource.OPTION_RESOLVE_ALL, Boolean.TRUE);
 		Resource resource = resourceSet.getResource(uri, true);
-
+		
+		resourceSet.getResources().add(resource);//////////////may be unnecessary////
+		
 		return (RunTimeModel) resource.getContents().get(0);
 	}
 	
@@ -92,6 +98,7 @@ public class SpecModelLoader {
 	public static RunTimeModel loadModel(String appName, String appSpec) {
 		Resource.Factory.Registry.INSTANCE.getExtensionToFactoryMap().put("spec", new EcoreResourceFactoryImpl ());
 		Injector injector = new DslStandaloneSetupGenerated().createInjectorAndDoEMFRegistration();
+		//Injector injector = Guice.createInjector(new DslRuntimeModule());
 		XtextResourceSet resourceSet = injector.getInstance(XtextResourceSet.class);
 		resourceSet.addLoadOption(XtextResource.OPTION_RESOLVE_ALL, Boolean.TRUE);	
 		System.out.println("load eca model - base file path: "+ AppDeployConflictHandler.getBaseFile());////////test
