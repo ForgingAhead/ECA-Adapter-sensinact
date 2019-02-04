@@ -152,7 +152,7 @@ public class DeploymentManagerWrapper implements IDeploymentManager {
             	System.out.println("DeploymentManagerWrapper: -> addApp()!!! --- " + appID);////////////test
             	List<IdentifiedConflict> resolved = manager.addApp(appID,appECA);
             	
-            	resolveConflict(resolved);
+            	resolveConflict(resolved, DEPLOY);
             }
         };
         SafeRunner.run(runnable);	
@@ -179,7 +179,7 @@ public class DeploymentManagerWrapper implements IDeploymentManager {
             	System.out.println("DeploymentManagerWrapper: -> removeApp()!!! --- " + appID);////////////test
             	List<IdentifiedConflict> conflicts = manager.removeApp(appID);
                 
-                resolveConflict(conflicts);
+                resolveConflict(conflicts, UNDEPLOY);
             }
         };
         
@@ -198,22 +198,29 @@ public class DeploymentManagerWrapper implements IDeploymentManager {
 	}
 
 	
-	public void resolveConflict(List<IdentifiedConflict> conflicts) {
+	public void resolveConflict(List<IdentifiedConflict> conflicts, String deployType) {
 		//TODO add the ResolutionType emun into consideration...
+    	ResolutionType type;
     	boolean stopDeployment = false;
+    	if(deployType.equals(DEPLOY))
+    		type = ResolutionType.MODIFY_RULE;
+    	else type = ResolutionType.ROLL_BACK;
     	
     	if(conflicts != null && conflicts.size()!=0) {
     		
     		for(IdentifiedConflict resolve : conflicts) {
     			if(resolve.getModifiedAppID() == null) {
+    				resolve.setResolutionType(ResolutionType.STOP_DEPLOYMENT);
     				stopDeployment  = true;
-    				stopDeployment(null, resolve.getExplanation());
+    				stopDeployment(null, resolve.getExplanation());//TODO stop deployment here???
     				break;
-    			}
+    			} else 
+    				resolve.setResolutionType(type);
     		}
     		
     		if(stopDeployment == false) {
-                ConflictsInfoDialog dialog = new ConflictsInfoDialog(null, conflicts, false);
+    			
+                ConflictsInfoDialog dialog = new ConflictsInfoDialog(null, conflicts, type);
         		dialog.create();
         		dialog.open();   			
     		}

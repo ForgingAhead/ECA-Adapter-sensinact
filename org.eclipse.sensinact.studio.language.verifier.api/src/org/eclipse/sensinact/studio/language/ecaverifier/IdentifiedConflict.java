@@ -21,7 +21,7 @@ public class IdentifiedConflict {
 		modifiedAppID = modified;
 		if(modified == null) {
 			setResolutionType(ResolutionType.STOP_DEPLOYMENT);
-			explanation = "We have identified conflict between the IoT applications \'" + app1 +"\' and \'" +
+			explanation = "\'" + app1 +"\' is in conflict with \'" +
 							app2+"\'. However, we have not found a solution to resolve the conflict. ";
 		}
 		else resolution_type = ResolutionType.MODIFY_RULE;//TODO to be modified later... should be more possibilities

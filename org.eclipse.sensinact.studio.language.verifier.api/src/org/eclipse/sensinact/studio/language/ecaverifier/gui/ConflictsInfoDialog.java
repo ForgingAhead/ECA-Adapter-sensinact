@@ -24,6 +24,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.sensinact.studio.language.ecaverifier.DeploymentManagerWrapper;
 import org.eclipse.sensinact.studio.language.ecaverifier.IdentifiedConflict;
+import org.eclipse.sensinact.studio.language.ecaverifier.ResolutionType;
 
 public class ConflictsInfoDialog  extends TitleAreaDialog{
 
@@ -38,14 +39,14 @@ public class ConflictsInfoDialog  extends TitleAreaDialog{
 	 */
 	private Text resultText;
 	
-	private boolean stopDeployment;
+	private ResolutionType resolutionType;
 	
-	public ConflictsInfoDialog(Shell parentShell, List<IdentifiedConflict> conflicts, boolean stopDeployment) {
+	public ConflictsInfoDialog(Shell parentShell, List<IdentifiedConflict> conflicts, ResolutionType type) {
 		super(parentShell);
 		// TODO Auto-generated constructor stub
 		
 		this.conflicts = conflicts;
-		this.stopDeployment = stopDeployment;
+		this.resolutionType = type;
 		setHelpAvailable(false);
 	}
 	
@@ -94,9 +95,12 @@ public class ConflictsInfoDialog  extends TitleAreaDialog{
 		
 		getShell().pack(true);
 		getShell().setSize(getShell().computeSize(SWT.DEFAULT, SWT.DEFAULT, true));	
-		if(stopDeployment == true) 
-			getButton(IDialogConstants.PROCEED_ID).setText("Stop Deployment");
 		
+		if(resolutionType.equals(ResolutionType.STOP_DEPLOYMENT)) 
+			getButton(IDialogConstants.PROCEED_ID).setText("Stop Deployment");
+		else if(resolutionType.equals(ResolutionType.ROLL_BACK))
+			getButton(IDialogConstants.PROCEED_ID).setText("Roll Back");
+
 	}
 	
 	@Override
@@ -130,7 +134,9 @@ public class ConflictsInfoDialog  extends TitleAreaDialog{
 	
 	public void autoResolveConflicts() {
 		
-		if(stopDeployment == true) {
+		if(resolutionType.equals(ResolutionType.STOP_DEPLOYMENT)) {
+			System.out.print("Stop deployment");
+			//TODO
 			
 		} else {
 			
@@ -161,6 +167,8 @@ public class ConflictsInfoDialog  extends TitleAreaDialog{
 					}
 				}
 			}
+			
+			super.close();//close the window...
 		}
 
 	}
@@ -173,16 +181,32 @@ public class ConflictsInfoDialog  extends TitleAreaDialog{
 		String result = "";
 		
 		for(IdentifiedConflict conf : conflicts) {
-			
-			result += "The app \'" + conf.getAppID1() + "\' is in conflict with the app \'" + conf.getAppID2() + "\'."; 
 			String modified = conf.getModifiedAppID();
 			
-			if(modified == null) {
+			if(conf.getResolutionType().equals(ResolutionType.ROLL_BACK)) {
+				String highPriApp = null;
+				if(conf.getAppID1().equals(modified))
+					highPriApp = conf.getAppID2();
+				else highPriApp = conf.getAppID1();
+				
+				result += "The undeployed app \'" + highPriApp + "\' was in conflict with the app \'" + modified 
+						+ "\' before, and the latter was modified because of the conflict. "
+						+ "Due to the undeployment of \'"+highPriApp
+						+ "\', we suggest to roll back the app \'"+modified
+						+ "\' to its previous rule as following: \n\n";
+				
+			} else if(conf.getResolutionType().equals(ResolutionType.MODIFY_RULE)) {
+				result += "We have identified that the app \'" + conf.getAppID1() + "\' is in conflict with the app \'" 
+							+ conf.getAppID2() + "\'.\n We suggested to modify \'"
+							+ conf.getModifiedAppID() + "\' to the following rule: \n\n";
+				
+			} else if(conf.getResolutionType().equals(ResolutionType.STOP_DEPLOYMENT)) {
 				//indicate that no resolution has been found to resolve the conflict
-				result += " But we have not found a solution to resolve the conflict. We suggest to stop the deployment!";
-			} else {
-				//indicate there is a recommended solution to resolve the conflict
-				result += "We suggested to modify \'"+conf.getModifiedAppID()+"\' to the following rule: \n\n";
+				result += "We have identified that the app \'" + conf.getAppID1() + "\' is in conflict with the app \'" 
+						+ conf.getAppID2() + "\'. \nHowever, we have not found a solution to resolve the conflict. \n"
+						+ "We suggest to stop the deployment!";
+			}
+			if(conf.getResolutionType().equals(ResolutionType.STOP_DEPLOYMENT) == false) {
 				File file = new File(DeploymentManagerWrapper.getBaseFile(), "output/"+modified+".sna");
 				try {
 					String tmp  = readFile(file.getAbsolutePath());
