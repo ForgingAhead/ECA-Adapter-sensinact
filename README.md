@@ -18,6 +18,7 @@ The following outlined instructions for the Eclipse configuration to experiment 
     2.1 Check: https://wiki.eclipse.org/SensiNact/studio-installation
     
 3. Install sensiNact gateway
+    
     3.1 check: https://wiki.eclipse.org/SensiNact/gateway-installation
 
 4. Run the sensiNact studio from Eclipse, write two applications that contain conflicts, when deploying the second application, the conflict would then be detected automatically, and given recommended resolution the applications would be updated automatically with conflicts resolved.
