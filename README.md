@@ -1,4 +1,4 @@
-# ECA-Adapter-sensinact
+# ECA-Verifier-sensinact
 
 To run the implementation, it requires to connect to a gateway, e.g. by running the sensiNact platform. 
 Additionally, for the Eclipse configuration:
