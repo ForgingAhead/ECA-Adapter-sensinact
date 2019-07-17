@@ -1,7 +1,7 @@
 # ECA-Verifier-sensinact
 
 To run the implementation, it requires to install the sensiNact studio (https://projects.eclipse.org/projects/technology.sensinact) and then connect to a sensinact gateway (https://projects.eclipse.org/projects/technology.sensinact), e.g. could be a localhost (127.0.0.1). 
-In this repository, a workable version of sensiNact studio and gateway is already included.
+In this repository, a workable version of sensiNact studio is already included.
 The following outlined instructions for the Eclipse configuration to experiment iwth the ECA Verifier:
 1. EMF transaction installation
 
