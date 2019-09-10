@@ -32,9 +32,19 @@ import nii.bigclout.ecaadapter.dsl.Resource_Object;
 import nii.bigclout.ecaadapter.dsl.SmallerElement;
 import nii.bigclout.ecaadapter.dsl.SmallerEqualElement;
 import nii.bigclout.ecaadapter.dsl.State_Object;
-
+/**
+ * Parsing .spec file/model, so as to enable the translation into the original .sna file/model
+ * @author Feng
+ *
+ */
 public class SpecParser {
 	
+	/**
+	 * Parse the condition of ECA rules. 
+	 * @param element the condition
+	 * @param writer the destination to write the parsing result.
+	 * @throws IOException
+	 */
 	public static void parseElement (Element element, BufferedWriter writer) throws IOException {
 		//OR: Left associative, priority 1
 		if (element instanceof OrElement) {
@@ -180,6 +190,12 @@ public class SpecParser {
 			return null;
 	}
 
+	/**
+	 * Parsing the Condition's (or Action's) parameters.
+	 * @param element
+	 * @param writer
+	 * @throws IOException
+	 */
 	private static void parseParameter(Element element, BufferedWriter writer) throws IOException{
 
 		if (element instanceof Number_Object) {
@@ -215,6 +231,13 @@ public class SpecParser {
 		}
 	}
 	
+	/**
+	 * Parsing the action of the ECA rule
+	 * @param actions
+	 * @param writer
+	 * @param resMap
+	 * @throws IOException
+	 */
 	public static void parseActions(EList<Action> actions, BufferedWriter writer, ResourceMapping resMap) throws IOException {
 		int count = actions.size();
 		for(Action action : actions) {

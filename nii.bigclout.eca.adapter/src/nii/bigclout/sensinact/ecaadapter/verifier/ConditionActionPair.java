@@ -5,16 +5,32 @@ import java.util.List;
 import nii.bigclout.ecaadapter.dsl.Action;
 import nii.bigclout.ecaadapter.dsl.Element;
 
+/**
+ * ConditionActionPair specifies a pair of condition-action rule in one application. 
+ * One ECA application can have multiple ConditionActionPair, e.g. from IfDoSpec, ElseIfDoSpec, ElseDoSpec. 
+ * @author Feng
+ *
+ */
 public class ConditionActionPair {
 	protected Element condition; //TODO condition could be null if it is the ElseDoSpec...
 	protected List<Action> actions;
-	protected List<String> actuators;
+	protected List<String> actuators;//the actuators involved in the action(s)
+	
 	public ConditionActionPair(Element cond, List<Action> acts) {
 		this.condition = cond;
 		this.actions = acts;
 		
 	}
 	
+	/**
+	 * Check if this ConditionActionPair is in conflict with the specified ConditionActionPair.
+	 * A conflict is defined as both ConditionActionPair are changing the same actuator into 
+	 * different states under different conditions.
+	 * Different conditions could mean different criteria for the same resources/sensors, or 
+	 * for different resources/sensors.
+	 * @param condAct
+	 * @return true if there is a conflict.
+	 */
 	public boolean conflictsWith(ConditionActionPair condAct) {
 		for(Action act : actions) {
 			for(Action act2 : condAct.actions) {

@@ -23,10 +23,14 @@ public class ResourceMapping {
 	//should reflect the original .sna model resources
 	private Map<String, DSL_Resource> resources; //<sna/spec resource name, Sna resource>
 	
+	//actuators are devices whose state is going to change by this ECA application.
+	//the actuator is represented by gatewayID/deviceID/serviceID
 	private Set<String> actuators;//<spec res name, dsl-name>
 	
-	//only those that have states can appear in the .spec model...
-	private Map<String, Set<String>> states; //<.spec concept name,  its states>, the state is in fact a DSL_Resource which represents a function usually..
+	//keep record of meaningful states of those actuators...
+	//<.spec concept name,  its states>, the state is in fact a DSL_Resource 
+	//which represents a function usually..
+	private Map<String, Set<String>> states; 
 	
 	public ResourceMapping() {
 		resources = new HashMap<String, DSL_Resource>();
@@ -44,15 +48,6 @@ public class ResourceMapping {
 		states = new HashMap<String, Set<String>>();
 		actuators = new HashSet<String>();
 	}
-	
-	/**
-	public ResourceMapping(String ruleID, String concept, DSL_Resource rs, Set<String> sts) {
-		this.ruleID = ruleID;
-		resources = new HashMap<String, DSL_Resource>();
-		states = new HashMap<String, Set<String>>();
-		resources.put(concept, rs);
-		setStates(sts);
-	}*/
 	
 	/**
 	 * Add a mapping between the spec resource concept and the DSL_Resource

@@ -1,20 +1,30 @@
 package org.eclipse.sensinact.studio.language.ecaverifier;
 
 public class IdentifiedConflict {
-	
+	//the App ID that's in conflict, i.e. the file name of the rule
 	private String appID1;
 	private String appID2;
 	
+	//which app is modified (supposed to be the lower priority one)
 	private String modifiedAppID = null;
 	
+	//why we recommend the suggested modification 
 	private String explanation;
 	
+	//type of conflict resolution
 	private ResolutionType resolution_type;
 	
 	public IdentifiedConflict() {
 		
 	}
 	
+	/**
+	 * Constructor, creating the object by giving the IDs of the two conflicting apps,
+	 *  along with the appID to be modified.
+	 * @param app1
+	 * @param app2
+	 * @param modified
+	 */
 	public IdentifiedConflict(String app1, String app2, String modified) {
 		appID1 = app1;
 		appID2 = app2;
@@ -27,10 +37,6 @@ public class IdentifiedConflict {
 		else resolution_type = ResolutionType.MODIFY_RULE;//TODO to be modified later... should be more possibilities
 	}
 	
-	public IdentifiedConflict(String app1, String app2) {
-		appID1 = app1;
-		appID2 = app2;
-	}
 	
 	public String getAppID1() {
 		return appID1;

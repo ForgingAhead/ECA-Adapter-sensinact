@@ -187,17 +187,32 @@ public class DeploymentManagerWrapper implements IDeploymentManager {
         
         return null;
 	}
-
+	
+	/**
+	 * Update the current deployed apps by adding the newly deployed one.
+	 * @param name
+	 * @param app
+	 */
 	public static void deployed(String name, IFile app) {
 		System.out.println("DeploymentManagerWrapper---> deployed app name: " + name);///////////////////////
 		deployedApps.put(name, app);
 	}
 	
+	/**
+	 * Update the current deployed apps by removing the undeployed one.
+	 * @param name
+	 */
 	public static void undeployed(String name) {
 		deployedApps.remove(name);
 	}
 
-	
+	/**
+	 * Resolve conflicts according to the deploy type, i.e., deploy or undeploy.
+	 * If the conflict happens when a new app is deployed, then resolve by modify the app's rule.
+	 * If it is about to be undeployed, then ROLL_BACK is applied.
+	 * @param conflicts
+	 * @param deployType
+	 */
 	public void resolveConflict(List<IdentifiedConflict> conflicts, String deployType) {
 		//TODO add the ResolutionType emun into consideration...
     	ResolutionType type;

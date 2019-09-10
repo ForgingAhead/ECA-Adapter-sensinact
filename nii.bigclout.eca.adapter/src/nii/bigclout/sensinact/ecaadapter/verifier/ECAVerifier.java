@@ -30,6 +30,14 @@ public interface ECAVerifier {
 	 */
 	public List<Conflict> checkConflict(Collection<RunTimeModel> models);
 	
+	/**
+	 * Check whether the newApp is in conflict with any of the specified apps. Those specified apps
+	 * all share the same actuator(s) as the newApp.
+	 * @param apps already deployed apps that share the same actuator(s) as the newApp
+	 * @param newApp the newly to be deployed app
+	 * @param model the newApp's .spec model
+	 * @return a list of Conflict detected among the newApp and the specified apps
+	 */
 	public List<Conflict> checkConflict(Collection<String> apps, String newApp, RunTimeModel model);
 
 }

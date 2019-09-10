@@ -16,6 +16,7 @@ public class Conflict {
 	private Element condition1; //this condition1 from rule1 is conflicted with condition2 of rule2
 	private Element condition2;
 	
+	//which ruleID is (going to be) modified
 	private String modified;
 	
 	public Conflict() {

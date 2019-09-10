@@ -12,7 +12,11 @@ import nii.bigclout.sensinact.ecaadapter.adaptation.Adaptation;
 import nii.bigclout.sensinact.ecaadapter.models.ModelManager;
 import nii.bigclout.sensinact.ecaadapter.translator.Translator;
 
-
+/**
+ * Implements methods to identify conflicts among applications
+ * @author Feng
+ *
+ */
 public class ConflictIdentification implements ECAVerifier{
 	
 	private static List<Conflict> conflicts = new ArrayList<Conflict>();
@@ -47,6 +51,12 @@ public class ConflictIdentification implements ECAVerifier{
 		}
 	}
 	
+	/**
+	 * Check and identify the conflicts between the specified applications
+	 * @param one appID of an existing, namely already deployed, application.
+	 * @param two the appID of the new application
+	 * @param model the newly to be added/deployed application .spec model
+	 */
 	private void checkConflict(String one, String two, RunTimeModel model) {
 		RunTimeModel model1 = Adaptation.getModel(one);
 		RunTimeModel model2 = model;
@@ -66,6 +76,14 @@ public class ConflictIdentification implements ECAVerifier{
 
 	}
 	
+	/**
+	 * Generate a conflict according to the specified appIDs and ConditionActionPair
+	 * @param pair1
+	 * @param pair2
+	 * @param app1
+	 * @param app2
+	 * @return
+	 */
 	private Conflict createConflict(ConditionActionPair pair1, ConditionActionPair pair2, String app1, String app2) {
 		Conflict conf = new Conflict();
 		conf.setRule1ID(app1);
@@ -76,6 +94,11 @@ public class ConflictIdentification implements ECAVerifier{
 		return conf;
 	}
 	
+	/**
+	 * Get all the ConditionActionPair in the specified .spec model.
+	 * @param model
+	 * @return
+	 */
 	private List<ConditionActionPair> getConditionActionPairs(RunTimeModel model){
 		List<ConditionActionPair> pair = new ArrayList<>();
 		if(model.getAppData().get(0).getSpecification().getIfdo()!=null) {

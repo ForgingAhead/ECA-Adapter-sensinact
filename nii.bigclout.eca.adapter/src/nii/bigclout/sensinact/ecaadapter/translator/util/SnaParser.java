@@ -38,6 +38,8 @@ import java.util.Map;
 import java.util.Set;
 
 /**
+ * Parsing the .sna file, namely the ECA application developed in sensiNact studio.
+ * By parsing, here it helps converting the .sna grammar/model into .spec model
  *@author Feng Chen
  */
 public class SnaParser {
