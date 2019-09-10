@@ -8,6 +8,8 @@ import java.util.Set;
 
 import org.eclipse.sensinact.studio.language.sensinact.DSL_Resource;
 
+import nii.bigclout.sensinact.ecaadapter.models.ModelManager;
+
 /**
  * A mapping between the .sna model and the .spec model. the main difference is that the SPEC model is asset-centric or device=centric
  * where the .sna model is action centric... they have different focuses
@@ -21,12 +23,15 @@ public class ResourceMapping {
 	//should reflect the original .sna model resources
 	private Map<String, DSL_Resource> resources; //<sna/spec resource name, Sna resource>
 	
+	private Set<String> actuators;//<spec res name, dsl-name>
+	
 	//only those that have states can appear in the .spec model...
 	private Map<String, Set<String>> states; //<.spec concept name,  its states>, the state is in fact a DSL_Resource which represents a function usually..
 	
 	public ResourceMapping() {
 		resources = new HashMap<String, DSL_Resource>();
 		states = new HashMap<String, Set<String>>();
+		actuators = new HashSet<String>();
 	}
 	
 	/**
@@ -37,15 +42,17 @@ public class ResourceMapping {
 		this.ruleID = ruleID;
 		resources = new HashMap<String, DSL_Resource>();
 		states = new HashMap<String, Set<String>>();
+		actuators = new HashSet<String>();
 	}
 	
+	/**
 	public ResourceMapping(String ruleID, String concept, DSL_Resource rs, Set<String> sts) {
 		this.ruleID = ruleID;
 		resources = new HashMap<String, DSL_Resource>();
 		states = new HashMap<String, Set<String>>();
 		resources.put(concept, rs);
-		states.put(concept, sts);
-	}
+		setStates(sts);
+	}*/
 	
 	/**
 	 * Add a mapping between the spec resource concept and the DSL_Resource
@@ -145,6 +152,25 @@ public class ResourceMapping {
 	 */
 	public void setStates(Map<String, Set<String>> stats) {
 		this.states = stats;
+		Map<String, String> devices = new HashMap<>();
+		
+		for(DSL_Resource dslRes : resources.values()) {
+			devices.put(dslRes.getDeviceID(), dslRes.getGatewayID()+"/"+dslRes.getDeviceID()+"/"+dslRes.getServiceID());
+		}
+		//those that have states are regarded as actuators
+		for(String res : stats.keySet()) {
+			String actuator = devices.get(res);
+			System.out.println("ResourceMapping: Actuator: "+ actuator);//////////test
+			actuators.add(actuator);
+		}
+	}
+	
+	public Set<String> getActuators(){
+		return actuators;
+	}
+	
+	public void setActuators(Set<String> actuators) {
+		this.actuators = new HashSet<String>(actuators);
 	}
 	
 }

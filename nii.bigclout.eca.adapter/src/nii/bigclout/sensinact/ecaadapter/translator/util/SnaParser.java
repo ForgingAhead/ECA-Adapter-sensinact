@@ -219,6 +219,7 @@ public class SnaParser {
 				System.out.println("this action has parameters, action: " + action.getRef().getName());///////////////////////test
 			} else {
 				writer.write(belongs.get(action.getRef().getName()) + " := " + action.getRef().getName());/////////////check....
+				
 			}
 			if(--count > 0) {
 				writer.write(" AND ");
@@ -301,7 +302,7 @@ public class SnaParser {
 			}
 		}
 		
-		Set<String> devices = new HashSet<String>();
+		Set<String> devices = new HashSet<String>();//the actual device that performs an action
 		
 		for(DSL_Resource resource : sna.getResources() ) {
 			resources.put(resource.getName(), resource);
@@ -344,4 +345,5 @@ public class SnaParser {
 
 		return states;
 	}
+
 }

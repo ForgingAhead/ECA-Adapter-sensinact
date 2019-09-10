@@ -17,8 +17,6 @@ public interface AdaptMethod {
 	
 	public Map<String, RunTimeModel> getModels();
 	
-	public RunTimeModel getModel(String appID);
-	
 	public void addModel(String appID, RunTimeModel model);
 	
 	public void removeModel(String appID);

@@ -29,5 +29,7 @@ public interface ECAVerifier {
 	 * @return a list of {@link Conflict} that has been identified among the existing models.
 	 */
 	public List<Conflict> checkConflict(Collection<RunTimeModel> models);
+	
+	public List<Conflict> checkConflict(Collection<String> apps, String newApp, RunTimeModel model);
 
 }

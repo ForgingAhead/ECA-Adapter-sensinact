@@ -4,9 +4,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import nii.bigclout.ecaadapter.dsl.RunTimeModel;
 import nii.bigclout.sensinact.ecaadapter.models.AdaptMethod;
+import nii.bigclout.sensinact.ecaadapter.models.ModelManager;
 import nii.bigclout.sensinact.ecaadapter.models.util.SpecModelSerialization;
 import nii.bigclout.sensinact.ecaadapter.models.util.SpecModifier;
 import nii.bigclout.sensinact.ecaadapter.translator.Translator;
@@ -14,7 +16,9 @@ import nii.bigclout.sensinact.ecaadapter.translator.util.ECAConstants;
 import nii.bigclout.sensinact.ecaadapter.verifier.Conflict;
 import nii.bigclout.sensinact.ecaadapter.verifier.ConflictIdentification;
 import nii.bigclout.sensinact.ecaadapter.verifier.ECAVerifier;
+import nii.bigclout.ecaadapter.dsl.Action;
 import nii.bigclout.ecaadapter.dsl.Element;
+import nii.bigclout.ecaadapter.dsl.ElseIfDoSpec;
 import nii.bigclout.ecaadapter.dsl.Resource;
 
 /**
@@ -54,10 +58,13 @@ public class Adaptation implements ModelAdaptationObserver {
 		// 1. analysis by using ECA Verifier to check if there is conflict
 		//models represent the existing deployed applications and ideally environment as well. they are already up to date..
 		System.out.println("Adaptation-> current size of RunTimeModel: "+ models.size());/////////////testing
-		List<Conflict> conflicts = verifier.checkConflict(models.values(), model);
+
 		
+		Set<String> actuators = Translator.getResourceMapping(appID).getActuators();
+		//List<Conflict> conflicts = verifier.checkConflict(ModelManager.getAppModelsbyActivators(actuators), model);	
+		List<Conflict> conflicts = verifier.checkConflict(ModelManager.getAppModelsIDbyActivator(actuators), appID, model);
 		// 2. here come the plan and execute
-		if(conflicts == null) {
+		if(conflicts == null || conflicts.size()==0) {
 			
 			System.out.println("No conflict is identified!");
 			
@@ -111,6 +118,36 @@ public class Adaptation implements ModelAdaptationObserver {
 		} else {
 			System.out.println("Shouldn't be here. the specified change type is incorrect: "+ changeType);
 		}
+	}
+	
+	List<String> getActivators(RunTimeModel model){
+		List<String> activators = new ArrayList<>();
+		//to name an activator: original name... it's ok...
+		activators.addAll(getActivators(model.getAppData().get(0).
+				getSpecification().getIfdo().getAction()));///if do
+		
+		if(model.getAppData().get(0).getSpecification().getElseIfDo() != null) {
+			for(ElseIfDoSpec elseif : model.getAppData().get(0).getSpecification().getElseIfDo()) {
+				activators.addAll(getActivators(elseif.getAction()));////else if do
+			}
+		}
+		
+		activators.addAll(getActivators(model.getAppData().get(0).
+				getSpecification().getElseDo().getAction()));///else do...
+		
+		return activators;
+	}
+	
+	List<String> getActivators(List<Action> actions){
+		List<String> activators = new ArrayList<>();
+		if(actions==null || actions.size()==0) return activators;
+		for(Action act : actions)
+			activators.add(act.getResource().getName());
+		return activators;
+	}
+	
+	public static RunTimeModel getModel(String appID) {
+		return models.get(appID);
 	}
 
 }

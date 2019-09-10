@@ -109,6 +109,11 @@ public class Translator {
 				writer.write("\r\n");
 
 			}
+			
+			//TODO the mappings...
+			resMappings.put(fileName, getResourceMapping(fileName, states, sna.getResources()));
+			
+			
 			writer.write("}\r\n\r\n");
 			
 			writer.write("app " + fileName + "{\r\n");
@@ -149,11 +154,6 @@ public class Translator {
 			
 			writer.write("}\r\n");
 			writer.close();
-			
-			//TODO the mappings...
-			resMappings.put(fileName, getResourceMapping(fileName, states, sna.getResources()));
-			
-			
 			
 			return outputFile.getAbsolutePath();
 			
@@ -305,65 +305,16 @@ public class Translator {
 		}
 		return null;
 	}
-	
-/**
-	//this way is too complicated...not finished
-	public static String specModel2sna(String fileName, RunTimeModel model) {
-		DSL_SENSINACT result = SensinactFactory.eINSTANCE.createDSL_SENSINACT();
-		
-		//1. get the resources.
-		List<String> resources = new ArrayList<String>();
-		for( Resource rs : model.getEnvData().get(0).getResources() ) {
-			resources.add(rs.getName());
-			for(State s: rs.getStates()) {
-				resources.add(s.getName());
-			}
-		}
-		//TODO make sure that this resMap contains all the concepts in the RunTimeModel...
-		ResourceMapping resMap = resMappings.get(fileName);
-		
-		for(String s : resources) {
-			DSL_Resource tmp = resMap.getDSL_Resource(s);
-			if(tmp!=null) {
-				//TODO write to the file...
-				result.getResources().add(tmp);
-			}
-		}
-		
-		//2. add triggers
-		
-		
-		return null;
-	}
-	*/
+
 	
 	private static ResourceMapping getResourceMapping(String fileName, Map<String, Set<String>> states, EList<DSL_Resource> resources) {
 		//when add resource, do merge the original resources with the coming new resources as well and also build states
 		//states:<specResourceName, states>
-		/**
-		Set<String> concepts = new HashSet<String>();
-		for(DSL_Resource res : resources) {
-			concepts.add(res.getName());
-		}
-		concepts.addAll(states.keySet());
-		for(String key: states.keySet()) {
-			concepts.addAll(states.get(key));
-		}
 
-		for(String concept : concepts) {
-			for(DSL_Resource res : resources) {
-				if(concept.equals(res.getName())) {
-					resMap.addResource(concept, res);
-					break;
-				}
-			}
-		} */
-		
-		
 		ResourceMapping resMap = new ResourceMapping(fileName);//fileName is the ruleID, namely the .sna file name.
 		
 		for(DSL_Resource rs : resources) {
-			resMap.addResource(rs.getName(), rs);
+			resMap.addResource(rs.getName(), rs);//TODO rs.getName() may not be the spec. resource name!!
 		}
 		
 		resMap.setStates(states);

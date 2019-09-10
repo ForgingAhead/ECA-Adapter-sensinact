@@ -14,7 +14,7 @@ State: name = ID
 ;
 
 Resource:
-	"resource" name=ID
+	"resource" name=ID 
 	("can" "be" states+= State ("," states+=State)*)?
 ;	
 AppMetaData:

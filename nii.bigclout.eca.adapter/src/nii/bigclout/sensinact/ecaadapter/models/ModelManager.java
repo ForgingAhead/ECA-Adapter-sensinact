@@ -1,12 +1,14 @@
 package nii.bigclout.sensinact.ecaadapter.models;
 
 import java.util.Map;
+import java.util.Set;
 
 import org.eclipse.sensinact.studio.language.ecaverifier.api.ConflictAdaptation;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 
 import nii.bigclout.ecaadapter.dsl.AppMetaData;
@@ -30,6 +32,10 @@ public  class ModelManager implements AdaptMethod{
 	// map of <appID, RunTimeModel> ; appID is also the .spec file name...
 	protected static Map<String, RunTimeModel> models = new HashMap<String, RunTimeModel>(); //the key is the .spec file name!
 	
+	//a mapping of the actuators to the apps that manipulate the specified actuator
+	//actuator is named by "gatewayID/deviceID/serviceID" 
+	protected static Map<String, Set<String>> actuatorApps = new HashMap<>();
+	
 	private ConflictAdaptation platformAdapt;
 	
 	public ModelManager(ConflictAdaptation plat) {
@@ -43,11 +49,9 @@ public  class ModelManager implements AdaptMethod{
 	}
 
 	
-	public RunTimeModel getModel(String appID) {
+	public static RunTimeModel getModel(String appID) {
 		return models.get(appID);
 	}
-
-
 
 	@Override
 	public void updateEnvModel(String envModelID, String newEnvModel) {
@@ -117,9 +121,46 @@ public  class ModelManager implements AdaptMethod{
 		// TODO Auto-generated method stub
 		models.put(appID, model);
 		notifyAdaptationObserver(Adaptation.ADD, appID,  model); 
+		
+		System.out.println("Add actuators to ModelManager at addModel...");//////////////test
+		for(String act : Translator.getResourceMapping(appID).getActuators())
+			ModelManager.putActivatorApps(act, appID);
 	}
 	
 	public void setConflictAdaptation(ConflictAdaptation adapt) {
 		this.platformAdapt = adapt;
 	}
+	
+	public static Set<String> getAppModelsIDbyActivator(Collection<String> actuators){
+		Set<String> actModels = new HashSet<String>();
+		
+		for(String act : actuators) {
+			actModels.addAll(actuatorApps.getOrDefault(act, new HashSet<String>()));
+		}
+		return actModels;
+	}
+	
+	public static Set<RunTimeModel> getAppModelsbyActivators(Collection<String> actuators){
+		Set<RunTimeModel> actModels = new HashSet<RunTimeModel>();
+		
+		for(String act : actuators) {
+			for(String app: actuatorApps.getOrDefault(act, new HashSet<String>())) {
+				actModels.add(models.get(app));
+			}
+		}
+		return actModels;
+	}
+	
+	public static void putActivatorApps(String actuator, String appName) {
+		Set<String> list = actuatorApps.getOrDefault(actuator, new HashSet<String>());
+		list.add(appName);
+		actuatorApps.putIfAbsent(actuator, list);
+	}
+	
+	public static void putActivatorApps(String actuator, List<String> appNames) {
+		Set<String> list = actuatorApps.getOrDefault(actuator, new HashSet<String>());
+		list.addAll(appNames);
+		actuatorApps.putIfAbsent(actuator, list);
+	}
+
 }

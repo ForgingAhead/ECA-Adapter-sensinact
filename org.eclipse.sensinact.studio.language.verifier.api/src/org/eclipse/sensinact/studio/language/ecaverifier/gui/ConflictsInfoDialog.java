@@ -197,7 +197,7 @@ public class ConflictsInfoDialog  extends TitleAreaDialog{
 				
 			} else if(conf.getResolutionType().equals(ResolutionType.MODIFY_RULE)) {
 				result += "We have identified that the app \'" + conf.getAppID1() + "\' is in conflict with the app \'" 
-							+ conf.getAppID2() + "\'.\n We suggested to modify \'"
+							+ conf.getAppID2() + "\'.\n We suggest to modify \'"
 							+ conf.getModifiedAppID() + "\' to the following rule: \n\n";
 				
 			} else if(conf.getResolutionType().equals(ResolutionType.STOP_DEPLOYMENT)) {
