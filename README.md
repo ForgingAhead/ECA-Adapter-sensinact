@@ -1,7 +1,8 @@
-# ECA-Adapter-sensinact
+# ECA-Verifier-sensinact
 
-To run the implementation, it requires to connect to a gateway, e.g. by running the sensiNact platform. 
-Additionally, for the Eclipse configuration:
+To run the implementation, it requires to install the sensiNact studio (https://projects.eclipse.org/projects/technology.sensinact) and then connect to a sensinact gateway (https://projects.eclipse.org/projects/technology.sensinact), e.g. could be a localhost (127.0.0.1). 
+In this repository, a workable version of sensiNact studio is already included.
+The following outlined instructions for the Eclipse configuration to experiment iwth the ECA Verifier:
 1. EMF transaction installation
 
     1.1 Go to Help / Install new software;
@@ -12,16 +13,14 @@ Additionally, for the Eclipse configuration:
 
     1.4 Install.
   
-2. Restlet installation
+2. Install sensiNact studio
 
-    2.1 Go to Help / Install new software
+    2.1 Check: https://wiki.eclipse.org/SensiNact/studio-installation
+    
+3. Install sensiNact gateway
+    
+    3.1 check: https://wiki.eclipse.org/SensiNact/gateway-installation
 
-    2.2 Work with: http://p2.restlet.com/2.2/ 
+4. Run the sensiNact studio from Eclipse, write two applications that contain conflicts, when deploying the second application, the conflict would then be detected automatically, and given recommended resolution the applications would be updated automatically with conflicts resolved.
 
-    2.3 Select :
-
-          - Restlet Core
-          - inside Standards support : Restlet Extension - JSON
-          - inside Third-Party integrations : Restlet Extension - Jackson
-
-    2.4 Install.
+5. A demo is shown here: https://youtu.be/5GAJcA_8UJ0 
