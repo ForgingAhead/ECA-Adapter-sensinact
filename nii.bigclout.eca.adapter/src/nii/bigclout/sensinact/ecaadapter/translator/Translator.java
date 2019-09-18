@@ -4,9 +4,11 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -161,7 +163,7 @@ public class Translator {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+		System.out.println("Should not be here... @Translator.snaModel2specFilePath ");
 		return null;
 	}
 	
@@ -383,6 +385,24 @@ public class Translator {
 		for(ResourceMapping tmp : resMappings.values()) {
 			
 		}
+	}
+	
+	public static void write2file(InputStream ins, String appID, String filePath) {
+		//File file = new File(AppDeployConflictHandler.getBaseFile(), 
+			//	ECAConstants.OUTPUT_FILE_LOCATION +appID+ ECAConstants.SNA_FILE_EXTENSION);
+		File file = new File(AppDeployConflictHandler.getBaseFile(),filePath);
+		//write the string to file.
+		OutputStream writer;
+		try {
+			writer = new FileOutputStream(file);
+			byte[] buffer = new byte[ins.available()];
+			ins.read(buffer);
+			writer.write(buffer);
+			writer.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} 
 	}
 	
 }

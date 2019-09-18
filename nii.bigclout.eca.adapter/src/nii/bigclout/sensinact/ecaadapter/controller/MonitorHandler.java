@@ -13,6 +13,7 @@ import nii.bigclout.sensinact.ecaadapter.adaptation.Adaptation;
 import nii.bigclout.sensinact.ecaadapter.models.ModelManager;
 import nii.bigclout.sensinact.ecaadapter.models.util.SpecModelLoader;
 import nii.bigclout.sensinact.ecaadapter.models.util.SpecModelSerialization;
+import nii.bigclout.sensinact.ecaadapter.translator.SnaModelSerialization;
 import nii.bigclout.sensinact.ecaadapter.translator.Translator;
 import nii.bigclout.sensinact.ecaadapter.translator.util.ECAConstants;
 import nii.bigclout.sensinact.ecaadapter.verifier.Conflict;
@@ -54,7 +55,7 @@ public class MonitorHandler implements Monitor{
 
 	@Override
 	public List<Conflict> notifyAddRule(String appID, InputStream appECA) {
-		
+
 		//1.translate the .sna dsl into .spec model.
 		InputStream specInputStream = Translator.sna2specInputStream(appID, appECA);
 		
@@ -81,7 +82,7 @@ public class MonitorHandler implements Monitor{
 	public List<Conflict> notifyRemoveRule(String appID) {
 		List<Conflict> conflicts = null;
 		//first of all, remove the spec model in the model manager.
-		modelMgr.removeModel(appID);
+		modelMgr.removeModel(appID);//??? not working???
 		adaptMgr.update(Adaptation.REMOVE, appID, null);
 		
 		System.out.println("\n****MonitorHandler - remove rule: " + appID);///////////testing////////////
@@ -114,6 +115,8 @@ public class MonitorHandler implements Monitor{
 			//but we need to update the recorded map of adaptedApps in the ModelAdaptationHandler
 			ModelAdaptationHandler.removeConflictedLowPrioApp(appID);
 		}
+		
+		//remove appID from the ModelManager
 		
 		return conflicts;
 		

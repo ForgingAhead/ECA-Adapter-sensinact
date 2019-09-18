@@ -17,6 +17,7 @@ import nii.bigclout.ecaadapter.dsl.Boolean_Object;
 import nii.bigclout.ecaadapter.dsl.DiffElement;
 import nii.bigclout.ecaadapter.dsl.DivisionElement;
 import nii.bigclout.ecaadapter.dsl.Element;
+import nii.bigclout.ecaadapter.dsl.ElseIfDoSpec;
 import nii.bigclout.ecaadapter.dsl.EqualElement;
 import nii.bigclout.ecaadapter.dsl.LargerElement;
 import nii.bigclout.ecaadapter.dsl.LargerEqualElement;
@@ -29,6 +30,7 @@ import nii.bigclout.ecaadapter.dsl.OrElement;
 import nii.bigclout.ecaadapter.dsl.PlusElement;
 import nii.bigclout.ecaadapter.dsl.Resource;
 import nii.bigclout.ecaadapter.dsl.Resource_Object;
+import nii.bigclout.ecaadapter.dsl.RunTimeModel;
 import nii.bigclout.ecaadapter.dsl.SmallerElement;
 import nii.bigclout.ecaadapter.dsl.SmallerEqualElement;
 import nii.bigclout.ecaadapter.dsl.State_Object;
@@ -167,7 +169,14 @@ public class SpecParser {
 		
 	}
 	
-
+	/**
+	 * Parse the specified list of elements linked by the specified function.
+	 * for instance, it could be an OrElement and thus the function is "or" which connects two conditions
+	 * @param writer destination to which the specified elements will be written
+	 * @param function denotes the connection algebra for the specified elements, e.g., "or", "and"
+	 * @param params the specified element, could be one or two
+	 * @throws IOException
+	 */
 	private static void parseElementInternal(BufferedWriter writer, String function, Element... params) throws IOException {
 		if(params.length > 1) {
 			parseParameter(params[0], writer);
@@ -179,6 +188,11 @@ public class SpecParser {
 		}
 	}
 	
+	/**
+	 * Get the Triggers (of resource type) from the specified element
+	 * @param element
+	 * @return a list of Resource which serve as triggers in the specified element
+	 */
 	public static List<Resource> getResourceTrigger(Element element) {
 		List<Resource> triggers = new ArrayList<Resource>();
 		if(element instanceof Resource_Object) {
@@ -187,7 +201,7 @@ public class SpecParser {
 		} else if(element instanceof State_Object) {
 			
 		}
-			return null;
+		return null;//TODO function not used actually
 	}
 
 	/**
@@ -295,5 +309,42 @@ public class SpecParser {
 	
 	//TODO how to generate
 	//public static void parseCEPStatement (DSL_CEP_STATEMENT statement) 
+	
+	/**
+	 * Calculate the actuators within the specified .spec model
+	 * @param model
+	 * @return a list of actuator names
+	 */
+	public static List<String> getActuators(RunTimeModel model){
+		List<String> actuators = new ArrayList<>();
+		//to name an activator: original name... it's ok...
+		actuators.addAll(getActuators(model.getAppData().get(0).
+				getSpecification().getIfdo().getAction()));///if do
+		
+		if(model.getAppData().get(0).getSpecification().getElseIfDo() != null) {
+			for(ElseIfDoSpec elseif : model.getAppData().get(0).getSpecification().getElseIfDo()) {
+				actuators.addAll(getActuators(elseif.getAction()));////else if do
+			}
+		}
+		
+		actuators.addAll(getActuators(model.getAppData().get(0).
+				getSpecification().getElseDo().getAction()));///else do...
+		
+		return actuators;
+	}
+	
+	/**
+	 * Calculate the list of actuators in the specified actions.
+	 * Each action is a change of actuator's state.
+	 * @param actions 
+	 * @return a list of actuator names involved in the specified actions
+	 */
+	public static List<String> getActuators(List<Action> actions){
+		List<String> actuators = new ArrayList<>();
+		if(actions==null || actions.size()==0) return actuators;
+		for(Action act : actions)
+			actuators.add(act.getResource().getName());
+		return actuators;
+	}
 
 }

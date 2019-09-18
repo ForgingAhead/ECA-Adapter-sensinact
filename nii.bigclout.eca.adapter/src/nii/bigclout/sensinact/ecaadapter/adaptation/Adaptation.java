@@ -109,7 +109,7 @@ public class Adaptation implements ModelAdaptationObserver {
 			models.put(appID, model);
 			
 		} else if(changeType.equals(REMOVE)) {
-			
+			System.out.println("Adaptation, remove model: "+ appID);
 			models.remove(appID);
 			
 		} else if(changeType.equals(MODIFY)) {
@@ -120,30 +120,41 @@ public class Adaptation implements ModelAdaptationObserver {
 		}
 	}
 	
-	List<String> getActivators(RunTimeModel model){
-		List<String> activators = new ArrayList<>();
+	/**
+	 * Return the involved actuators that are manipulated by the specified model.
+	 * @param model .spec model that mimics the ECA rules of the original IoT application developed by sensiNact studio
+	 * @return a list of actuators
+	 */
+	List<String> getActuators(RunTimeModel model){
+		List<String> actuators = new ArrayList<>();
 		//to name an activator: original name... it's ok...
-		activators.addAll(getActivators(model.getAppData().get(0).
+		actuators.addAll(getActuators(model.getAppData().get(0).
 				getSpecification().getIfdo().getAction()));///if do
 		
 		if(model.getAppData().get(0).getSpecification().getElseIfDo() != null) {
 			for(ElseIfDoSpec elseif : model.getAppData().get(0).getSpecification().getElseIfDo()) {
-				activators.addAll(getActivators(elseif.getAction()));////else if do
+				actuators.addAll(getActuators(elseif.getAction()));////else if do
 			}
 		}
 		
-		activators.addAll(getActivators(model.getAppData().get(0).
+		actuators.addAll(getActuators(model.getAppData().get(0).
 				getSpecification().getElseDo().getAction()));///else do...
 		
-		return activators;
+		return actuators;
 	}
 	
-	List<String> getActivators(List<Action> actions){
-		List<String> activators = new ArrayList<>();
-		if(actions==null || actions.size()==0) return activators;
+	/**
+	 * Return a list of actuator names that are involved in the specified actions.
+	 * Actuator is a device that changes state.
+	 * @param actions
+	 * @return
+	 */
+	List<String> getActuators(List<Action> actions){
+		List<String> actuators = new ArrayList<>();
+		if(actions==null || actions.size()==0) return actuators;
 		for(Action act : actions)
-			activators.add(act.getResource().getName());
-		return activators;
+			actuators.add(act.getResource().getName());
+		return actuators;
 	}
 	
 	public static RunTimeModel getModel(String appID) {

@@ -23,8 +23,8 @@ import nii.bigclout.sensinact.ecaadapter.models.AdaptMethod;
 public class ModelAdaptationHandler {
 
 	
-	protected AdaptMethod adaptModel;
-	private ConflictAdaptation platformAdapt;
+	protected static AdaptMethod adaptModel;
+	private static ConflictAdaptation platformAdapt;
 	
 	//<conflicted app with higher priority, adapted apps, i.e., lower priority apps that have been changed due to the conflict>
 	private static Map<String, Set<String>> adaptedApps = new HashMap<String, Set<String>>();

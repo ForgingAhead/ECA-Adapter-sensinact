@@ -24,14 +24,14 @@ public interface Deployment {
 	 * @param appECA ECA rule of the application. the original .sna file content as InputStream
 	 * 
 	 */
-	public List<IdentifiedConflict>  addApp(String appID, InputStream appECA);
-	//Collection<String>
+	public List<IdentifiedConflict>  deployIoTApp(String appID, InputStream appECA);
+
 	
 	/**
 	 * called when the specified application appID is going to be un-deployed in the platform.
 	 * @param appID name of the application, assuming it's the unique identifier for applications deployed under one client...
 	 * 
 	 */
-	public List<IdentifiedConflict> removeApp(String appID);	
+	public List<IdentifiedConflict> undeployIoTApp(String appID);	
 
 }

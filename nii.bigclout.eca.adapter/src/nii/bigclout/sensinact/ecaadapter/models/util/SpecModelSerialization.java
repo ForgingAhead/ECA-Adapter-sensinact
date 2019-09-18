@@ -4,6 +4,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Paths;
 
 import org.eclipse.emf.common.util.URI;
@@ -17,14 +18,18 @@ import org.eclipse.xtext.serializer.ISerializer;
 import nii.bigclout.ecaadapter.dsl.Element;
 import nii.bigclout.ecaadapter.dsl.RunTimeModel;
 import nii.bigclout.sensinact.ecaadapter.controller.AppDeployConflictHandler;
+import nii.bigclout.sensinact.ecaadapter.translator.Translator;
 import nii.bigclout.sensinact.ecaadapter.translator.util.ECAConstants;
 
 /**
+ * 
  *@author Feng Chen
  */
 public class SpecModelSerialization {
 
-	
+	public static void write2file(InputStream spec, String appID, String filePath) {
+		
+	}
 
 	public static String model2filePath(RunTimeModel model, String name) {
 		String serialized = "";
@@ -46,6 +51,8 @@ public class SpecModelSerialization {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} 
+		
+		//Translator.write2file(new FileInputStream(new File(fileName)), name, filePath);
 		
 		return fileName;
 	}

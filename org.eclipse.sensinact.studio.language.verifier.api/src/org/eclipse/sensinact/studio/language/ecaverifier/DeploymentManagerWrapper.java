@@ -135,7 +135,7 @@ public class DeploymentManagerWrapper implements IDeploymentManager {
 
 
 	@Override
-	public List<IdentifiedConflict> addApp(String appID, InputStream appECA) {
+	public List<IdentifiedConflict> deployIoTApp(String appID, InputStream appECA) {
 		IDeploymentManager manager = getDeploymentManager();
 		if(manager == null){
 			 LOGGER.log(Level.CONFIG,"No IDeploymentManager available");
@@ -150,7 +150,7 @@ public class DeploymentManagerWrapper implements IDeploymentManager {
             @Override
             public void run() throws Exception {
             	System.out.println("DeploymentManagerWrapper: -> addApp()!!! --- " + appID);////////////test
-            	List<IdentifiedConflict> resolved = manager.addApp(appID,appECA);
+            	List<IdentifiedConflict> resolved = manager.deployIoTApp(appID,appECA);
             	
             	resolveConflict(resolved, DEPLOY);
             }
@@ -162,7 +162,7 @@ public class DeploymentManagerWrapper implements IDeploymentManager {
 
 
 	@Override
-	public List<IdentifiedConflict> removeApp(String appID) {
+	public List<IdentifiedConflict> undeployIoTApp(String appID) {
 		IDeploymentManager manager = getDeploymentManager();
 		if(manager == null){
 			 LOGGER.log(Level.CONFIG,"No IDeploymentManager available");
@@ -177,7 +177,7 @@ public class DeploymentManagerWrapper implements IDeploymentManager {
             @Override
             public void run() throws Exception {
             	System.out.println("DeploymentManagerWrapper: -> removeApp()!!! --- " + appID);////////////test
-            	List<IdentifiedConflict> conflicts = manager.removeApp(appID);
+            	List<IdentifiedConflict> conflicts = manager.undeployIoTApp(appID);
                 
                 resolveConflict(conflicts, UNDEPLOY);
             }

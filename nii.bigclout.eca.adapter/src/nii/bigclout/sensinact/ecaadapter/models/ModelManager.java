@@ -62,16 +62,14 @@ public  class ModelManager implements AdaptMethod{
 
 	@Override
 	public void removeModel(String appID) {
-		
+		System.out.println("ModelManager, remove Model : " + appID);////////////test
 		RunTimeModel removed = models.get(appID);
 		
 		ResourceMapping resMap = Translator.getResourceMapping(appID);
 		
 		models.remove(appID);
 		Translator.removeResourceMapping(appID);
-		
-		
-		
+
 		//TODO more complicated here is that removing all the resources-related constraints in other apps...
 		for(RunTimeModel rtm : models.values()) {
 			

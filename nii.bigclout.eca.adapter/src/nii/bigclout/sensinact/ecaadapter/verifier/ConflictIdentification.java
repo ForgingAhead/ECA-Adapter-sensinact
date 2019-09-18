@@ -60,7 +60,10 @@ public class ConflictIdentification implements ECAVerifier{
 	private void checkConflict(String one, String two, RunTimeModel model) {
 		RunTimeModel model1 = Adaptation.getModel(one);
 		RunTimeModel model2 = model;
-		
+		if(model1==null || model2==null) {
+			System.out.println("@ConflictIdentification.checkConflict: Null pointer found.");
+			return;
+		}
 		//get the actuator, and check for the states...
 		List<ConditionActionPair> pair1 = getConditionActionPairs(model1);
 		List<ConditionActionPair> pair2 = getConditionActionPairs(model2);
@@ -101,6 +104,7 @@ public class ConflictIdentification implements ECAVerifier{
 	 */
 	private List<ConditionActionPair> getConditionActionPairs(RunTimeModel model){
 		List<ConditionActionPair> pair = new ArrayList<>();
+		if(model==null) return pair;
 		if(model.getAppData().get(0).getSpecification().getIfdo()!=null) {
 			pair.add(new ConditionActionPair(model.getAppData().get(0).getSpecification().
 					getIfdo().getCondition(), model.getAppData().get(0).getSpecification().

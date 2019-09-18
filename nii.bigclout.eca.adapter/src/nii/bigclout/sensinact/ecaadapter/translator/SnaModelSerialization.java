@@ -2,8 +2,11 @@ package nii.bigclout.sensinact.ecaadapter.translator;
 
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 import org.eclipse.sensinact.studio.language.sensinact.DSL_Expression;
 import org.eclipse.sensinact.studio.language.sensinact.DSL_Resource;
@@ -49,6 +52,7 @@ public class SnaModelSerialization {
 		
 		return filePath;
 	}
+	
 
 	/**
 	 * Transform the DSL_Expression object to the corresponding dsl text string

@@ -23,7 +23,9 @@ import org.eclipse.sensinact.studio.language.ecaverifier.api.IDeploymentManager;
 import nii.bigclout.sensinact.ecaadapter.verifier.Conflict;
 
 /**
- * 
+ * This class handles the conflict detection and resolution scenarios 
+ * when sensinact studio applications are deployed and undeployed.
+ * It implements the extension point (IDeploymentManager) defined by sensinact studio.
  * @author Feng
  *
  */
@@ -124,7 +126,7 @@ public class AppDeployConflictHandler implements IDeploymentManager {
 	
 
 	@Override
-	public List<IdentifiedConflict> addApp(String appID, InputStream appECA) {
+	public List<IdentifiedConflict> deployIoTApp(String appID, InputStream appECA) {
 		//notify the monitor in the ECA Adapter that a new app is going to be deployed.
 		
 		List<Conflict> conflicts = monitor.notifyAddRule(appID, appECA);
@@ -134,7 +136,7 @@ public class AppDeployConflictHandler implements IDeploymentManager {
 	}
 
 	@Override
-	public List<IdentifiedConflict> removeApp(String appID) {
+	public List<IdentifiedConflict> undeployIoTApp(String appID) {
 		//notify the monitor in the ECA Adapter that an app is going to be un-deployed.
 		List<Conflict> conflicts = monitor.notifyRemoveRule(appID);
 		

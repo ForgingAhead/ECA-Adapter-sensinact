@@ -65,7 +65,7 @@ public class SnaDeployHandler extends SnaAppHandler {
 			 */
 			System.out.println("SnaDeployHandler ---> to be deployed file name: " + fileName);
 			DeploymentManagerWrapper.deployed(fileName, ifile);//////////////////////testing
-			deploymentManager.addApp(fileName, ifile.getContents());
+			deploymentManager.deployIoTApp(fileName, ifile.getContents());
 			
 			ifile.getContents().close();
 			

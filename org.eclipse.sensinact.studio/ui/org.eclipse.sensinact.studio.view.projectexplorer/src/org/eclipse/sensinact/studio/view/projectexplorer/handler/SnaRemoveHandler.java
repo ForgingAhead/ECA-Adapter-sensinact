@@ -84,7 +84,7 @@ public class SnaRemoveHandler extends SnaAppHandler {
 
 	private MsgSensinact uninstall(ResourceDescriptor resource, String name) throws JSONException, IOException {
 
-		deploymentManager.removeApp(name);
+		deploymentManager.undeployIoTApp(name);
 		
 		System.out.println("\n*****SnaRemoveHandler - removing app: " + name);////////////////////testing
 		
