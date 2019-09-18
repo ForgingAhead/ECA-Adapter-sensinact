@@ -23,4 +23,4 @@ The following outlined instructions for the Eclipse configuration to experiment 
 
 4. Run the sensiNact studio from Eclipse, write two applications that contain conflicts, when deploying the second application, the conflict would then be detected automatically, and given recommended resolution the applications would be updated automatically with conflicts resolved.
 
-5. A demo is shown here: https://youtu.be/5GAJcA_8UJ0 
+5. A demo is shown here: https://youtu.be/1HTq-BK_lbo 
